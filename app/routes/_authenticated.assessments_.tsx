@@ -1,19 +1,33 @@
+import type { Route } from "./+types/_authenticated.assessments_";
 import { Link } from "react-router";
+import {
+  getAssessment,
+  getAssessments,
+  getMe,
+  getSubjects,
+  type AssessmentDto,
+} from "~/api/nagaraCareAPI";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Separator } from "~/components/ui/separator";
-import { Textarea } from "~/components/ui/textarea";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 
-export default function Assessments() {
+export async function clientLoader() {
+  const me = await getMe();
+  const assessments = await getAssessments();
+  return {
+    assessments,
+  };
+}
+
+export default function Assessments({ loaderData }: Route.ComponentProps) {
+  const { assessments } = loaderData;
   return (
     <div className="space-y-6">
       <Card>
@@ -26,9 +40,41 @@ export default function Assessments() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">
-            アセスメントの一覧が表示されます。
-          </div>
+          {assessments.items.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-4">
+              アセスメントがありません
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>対象者</TableHead>
+                  <TableHead>作成日</TableHead>
+                  <TableHead className="text-right">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {assessments.items.map((assessment: AssessmentDto) => (
+                  <TableRow key={assessment.uid}>
+                    <TableCell>
+                      {assessment.subject.familyName}{" "}
+                      {assessment.subject.givenName}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(assessment.createdAt).toLocaleDateString(
+                        "ja-JP"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/assessments/${assessment.uid}`}>詳細</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
