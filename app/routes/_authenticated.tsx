@@ -5,6 +5,9 @@ import { Button } from "~/components/ui/button";
 import { AuthProvider } from "~/contexts/AuthContext";
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+  if (!localStorage.getItem("token")) {
+    return redirect("/login");
+  }
   try {
     const me = await getMe();
     if (me.role !== "TENANT_ADMIN" && me.role !== "CAREGIVER") {
