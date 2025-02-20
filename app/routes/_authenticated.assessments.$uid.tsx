@@ -19,6 +19,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
 import { Form, useNavigate } from "react-router";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const assessment = await getAssessment(params.uid);
@@ -71,13 +72,14 @@ export async function clientAction({
 export default function Assessment({ loaderData }: Route.ComponentProps) {
   const { assessment } = loaderData;
   const [transcriptionText, setTranscriptionText] = useState("");
+  const [summaryText, setSummaryText] = useState("");
   const navigate = useNavigate();
 
   return (
     <div className="container mx-auto p-4">
       <div className="grid grid-cols-2 gap-4">
         {/* 左ペイン：アセスメントフォーム */}
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-2rem)]">
           <Card>
             <CardHeader>
               <CardTitle>アセスメント情報</CardTitle>
@@ -368,22 +370,38 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
           </Card>
         </div>
 
-        {/* 右ペイン：文字起こしテキストエリア */}
+        {/* 右ペイン：文字起こしと要約のタブ */}
         <div>
           <Card className="h-full">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>文字起こし</CardTitle>
+                <CardTitle>文字起こし・要約</CardTitle>
                 <Button>解析</Button>
               </div>
             </CardHeader>
             <CardContent>
-              <Textarea
-                value={transcriptionText}
-                onChange={(e) => setTranscriptionText(e.target.value)}
-                className="h-[calc(100vh-12rem)]"
-                placeholder="音声の文字起こしがここに表示されます..."
-              />
+              <Tabs defaultValue="transcription" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="transcription">文字起こし</TabsTrigger>
+                  <TabsTrigger value="summary">要約</TabsTrigger>
+                </TabsList>
+                <TabsContent value="transcription">
+                  <Textarea
+                    value={transcriptionText}
+                    onChange={(e) => setTranscriptionText(e.target.value)}
+                    className="h-[calc(100vh-16rem)]"
+                    placeholder="音声の文字起こしがここに表示されます..."
+                  />
+                </TabsContent>
+                <TabsContent value="summary">
+                  <Textarea
+                    value={summaryText}
+                    onChange={(e) => setSummaryText(e.target.value)}
+                    className="h-[calc(100vh-16rem)]"
+                    placeholder="文字起こしの要約がここに表示されます..."
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
