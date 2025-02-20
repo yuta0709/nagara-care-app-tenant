@@ -37,7 +37,7 @@ export default function AuthenticatedLayout({
               {/* 左側: ブランドロゴとナビゲーション */}
               <div className="flex items-center space-x-8">
                 <Link
-                  to="/dashboard"
+                  to="/"
                   className="flex items-center text-xl font-bold transition-colors hover:text-primary"
                 >
                   ながらかいご
