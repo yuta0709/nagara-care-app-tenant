@@ -1,6 +1,8 @@
 import {
   getAssessment,
+  getTranscription,
   updateAssessment,
+  updateTranscription,
   type AssessmentDto,
   type AssessmentUpdateInputDto,
 } from "~/api/nagaraCareAPI";
@@ -8,7 +10,6 @@ import type { Route } from "./+types/_authenticated.assessments.$uid";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -23,8 +24,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const assessment = await getAssessment(params.uid);
+  const transcription = await getTranscription(params.uid);
   return {
     assessment,
+    transcription,
   };
 }
 
@@ -33,6 +36,14 @@ export async function clientAction({
   params,
 }: Route.ClientActionArgs) {
   const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "update_transcription") {
+    const transcription = formData.get("transcription") as string;
+    await updateTranscription(params.uid, { transcription });
+    return null;
+  }
+
   const data: AssessmentUpdateInputDto = {
     familyInfo: formData.get("familyInfo") as string,
     careLevel: formData.get(
@@ -70,8 +81,10 @@ export async function clientAction({
 }
 
 export default function Assessment({ loaderData }: Route.ComponentProps) {
-  const { assessment } = loaderData;
-  const [transcriptionText, setTranscriptionText] = useState("");
+  const { assessment, transcription } = loaderData;
+  const [transcriptionText, setTranscriptionText] = useState(
+    transcription.transcription
+  );
   const [summaryText, setSummaryText] = useState("");
   const navigate = useNavigate();
 
@@ -385,13 +398,33 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                   <TabsTrigger value="transcription">文字起こし</TabsTrigger>
                   <TabsTrigger value="summary">要約</TabsTrigger>
                 </TabsList>
-                <TabsContent value="transcription">
-                  <Textarea
-                    value={transcriptionText}
-                    onChange={(e) => setTranscriptionText(e.target.value)}
-                    className="h-[calc(100vh-16rem)]"
-                    placeholder="音声の文字起こしがここに表示されます..."
-                  />
+                <TabsContent value="transcription" className="space-y-4">
+                  <Form method="post">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="update_transcription"
+                    />
+                    <div className="space-y-4">
+                      <div className="w-full">
+                        <Button
+                          type="submit"
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          文字起こしを更新
+                        </Button>
+                      </div>
+                      <Textarea
+                        name="transcription"
+                        value={transcriptionText}
+                        onChange={(e) => setTranscriptionText(e.target.value)}
+                        className="h-[calc(100vh-20rem)]"
+                        placeholder="音声の文字起こしがここに表示されます..."
+                      />
+                    </div>
+                  </Form>
                 </TabsContent>
                 <TabsContent value="summary">
                   <Textarea

@@ -4420,6 +4420,69 @@ export const useDeleteTranscription = <TError = unknown,
     }
     
 /**
+ * @summary アセスメントの要約を作成
+ */
+export const summarizeAssessment = (
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<string>(
+      {url: `/assessments/${uid}/summarize`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getSummarizeAssessmentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeAssessment>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof summarizeAssessment>>, TError,{uid: string}, TContext> => {
+    
+const mutationKey = ['summarizeAssessment'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof summarizeAssessment>>, {uid: string}> = (props) => {
+          const {uid} = props ?? {};
+
+          return  summarizeAssessment(uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SummarizeAssessmentMutationResult = NonNullable<Awaited<ReturnType<typeof summarizeAssessment>>>
+    
+    export type SummarizeAssessmentMutationError = unknown
+
+    /**
+ * @summary アセスメントの要約を作成
+ */
+export const useSummarizeAssessment = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeAssessment>>, TError,{uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof summarizeAssessment>>,
+        TError,
+        {uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getSummarizeAssessmentMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
  * @summary テナント内のアセスメント対象者一覧を取得
  */
 export const getSubjects = (
