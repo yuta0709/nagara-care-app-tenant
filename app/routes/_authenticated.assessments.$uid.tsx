@@ -3,6 +3,7 @@ import {
   getTranscription,
   updateAssessment,
   updateTranscription,
+  summarizeAssessment,
   type AssessmentDto,
   type AssessmentUpdateInputDto,
 } from "~/api/nagaraCareAPI";
@@ -18,8 +19,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
-import { useState } from "react";
-import { Form, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { Form, useActionData, useNavigate } from "react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -42,6 +43,11 @@ export async function clientAction({
     const transcription = formData.get("transcription") as string;
     await updateTranscription(params.uid, { transcription });
     return null;
+  }
+
+  if (intent === "summarize") {
+    const summary = await summarizeAssessment(params.uid);
+    return { summary };
   }
 
   const data: AssessmentUpdateInputDto = {
@@ -82,11 +88,18 @@ export async function clientAction({
 
 export default function Assessment({ loaderData }: Route.ComponentProps) {
   const { assessment, transcription } = loaderData;
+  const actionData = useActionData<{ summary: string }>();
   const [transcriptionText, setTranscriptionText] = useState(
     transcription.transcription
   );
   const [summaryText, setSummaryText] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (actionData?.summary) {
+      setSummaryText(actionData.summary);
+    }
+  }, [actionData]);
 
   return (
     <div className="container mx-auto p-4">
@@ -426,13 +439,29 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                     </div>
                   </Form>
                 </TabsContent>
-                <TabsContent value="summary">
-                  <Textarea
-                    value={summaryText}
-                    onChange={(e) => setSummaryText(e.target.value)}
-                    className="h-[calc(100vh-16rem)]"
-                    placeholder="文字起こしの要約がここに表示されます..."
-                  />
+                <TabsContent value="summary" className="space-y-4">
+                  <Form method="post">
+                    <input type="hidden" name="intent" value="summarize" />
+                    <div className="space-y-4">
+                      <div className="w-full">
+                        <Button
+                          type="submit"
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          要約を生成
+                        </Button>
+                      </div>
+                      <Textarea
+                        value={summaryText}
+                        onChange={(e) => setSummaryText(e.target.value)}
+                        className="h-[calc(100vh-20rem)]"
+                        placeholder="文字起こしの要約がここに表示されます..."
+                        readOnly
+                      />
+                    </div>
+                  </Form>
                 </TabsContent>
               </Tabs>
             </CardContent>
