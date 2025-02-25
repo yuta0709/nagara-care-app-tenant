@@ -51,6 +51,12 @@ export default function AuthenticatedLayout({
                 >
                   アセスメント
                 </Link>
+                <Link
+                  to="/residents"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  利用者
+                </Link>
               </div>
 
               {/* 右側: ユーザー情報とログアウト */}
