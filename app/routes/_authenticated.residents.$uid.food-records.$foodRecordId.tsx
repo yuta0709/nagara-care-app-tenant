@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { Form, redirect, useNavigate } from "react-router";
+import { useState, useEffect } from "react";
+import { Form, redirect, useActionData } from "react-router";
 import type { Route } from "./+types/_authenticated.residents.$uid.food-records.$foodRecordId";
 import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
@@ -17,27 +16,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { Slider } from "~/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   getFoodRecords,
-  getResident,
   updateFoodRecord,
-  deleteFoodRecord,
-  FoodRecordUpdateInputDtoMealTime,
-  FoodRecordUpdateInputDtoBeverageType,
+  getFoodRecordTranscription,
+  updateFoodRecordTranscription,
+  extractFoodRecord,
+  type FoodRecordUpdateInputDto,
+  type FoodRecordExtractedDto,
 } from "~/api/nagaraCareAPI";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 
-export async function clientLoader({ params }: Route.LoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const { uid, foodRecordId } = params;
   if (!uid || !foodRecordId)
     throw new Error("必要なパラメータが不足しています");
 
-  // 食事記録一覧を取得して、その中から特定のUIDの記録を見つける
   const foodRecordsResponse = await getFoodRecords(uid);
   const foodRecord = foodRecordsResponse.items.find(
     (record) => record.uid === foodRecordId
@@ -47,11 +46,11 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
     throw new Error("指定された食事記録が見つかりません");
   }
 
-  const resident = await getResident(uid, uid);
+  const transcription = await getFoodRecordTranscription(uid, foodRecordId);
 
   return {
-    resident,
     foodRecord,
+    transcription,
   };
 }
 
@@ -64,52 +63,44 @@ export async function clientAction({
     throw new Error("必要なパラメータが不足しています");
 
   const formData = await request.formData();
-  const action = formData.get("_action") as string;
+  const intent = formData.get("intent");
 
-  if (action === "delete") {
-    await deleteFoodRecord(uid, foodRecordId);
-    return redirect(`/residents/${uid}/food-records`);
+  if (intent === "update_transcription") {
+    const transcription = formData.get("transcription") as string;
+    await updateFoodRecordTranscription(uid, foodRecordId, { transcription });
+    return null;
   }
 
-  const mealTime = formData.get(
-    "mealTime"
-  ) as keyof typeof FoodRecordUpdateInputDtoMealTime;
-  const beverageType = formData.get(
-    "beverageType"
-  ) as keyof typeof FoodRecordUpdateInputDtoBeverageType;
-  const mainCoursePercentage = parseInt(
-    formData.get("mainCoursePercentage") as string,
-    10
-  );
-  const sideDishPercentage = parseInt(
-    formData.get("sideDishPercentage") as string,
-    10
-  );
-  const soupPercentage = parseInt(formData.get("soupPercentage") as string, 10);
-  const beverageVolume = parseInt(formData.get("beverageVolume") as string, 10);
-  const notes = formData.get("notes") as string;
-  const recordedAt = formData.get("recordedAt") as string;
+  if (intent === "extract") {
+    const result = await extractFoodRecord(uid, foodRecordId);
+    return { extracted: result };
+  }
 
-  await updateFoodRecord(uid, foodRecordId, {
-    recordedAt,
-    mealTime,
-    mainCoursePercentage,
-    sideDishPercentage,
-    soupPercentage,
-    beverageType,
-    beverageVolume,
-    notes,
-  });
+  const data: FoodRecordUpdateInputDto = {
+    recordedAt: formData.get("recordedAt") as string,
+    mealTime: formData.get("mealTime") as FoodRecordUpdateInputDto["mealTime"],
+    mainCoursePercentage: Number(formData.get("mainCoursePercentage")),
+    sideDishPercentage: Number(formData.get("sideDishPercentage")),
+    soupPercentage: Number(formData.get("soupPercentage")),
+    beverageType: formData.get(
+      "beverageType"
+    ) as FoodRecordUpdateInputDto["beverageType"],
+    beverageVolume: Number(formData.get("beverageVolume")),
+    notes: formData.get("notes") as string,
+  };
 
-  return redirect(`/residents/${uid}/food-records`);
+  await updateFoodRecord(uid, foodRecordId, data);
+  return null;
 }
 
-export default function FoodRecordDetailPage({
-  loaderData,
-}: Route.ComponentProps) {
-  const { resident, foodRecord } = loaderData;
-  const navigate = useNavigate();
+export default function FoodRecordPage({ loaderData }: Route.ComponentProps) {
+  const { foodRecord, transcription } = loaderData;
+  const actionData = useActionData<{ extracted: FoodRecordExtractedDto }>();
+  const [transcriptionText, setTranscriptionText] = useState(
+    transcription.transcription
+  );
 
+  // フォームの値を管理するstate
   const [mainCoursePercentage, setMainCoursePercentage] = useState(
     foodRecord.mainCoursePercentage
   );
@@ -119,224 +110,211 @@ export default function FoodRecordDetailPage({
   const [soupPercentage, setSoupPercentage] = useState(
     foodRecord.soupPercentage
   );
+  const [beverageType, setBeverageType] = useState(foodRecord.beverageType);
   const [beverageVolume, setBeverageVolume] = useState(
     foodRecord.beverageVolume
   );
-  const [mealTime, setMealTime] = useState<
-    keyof typeof FoodRecordUpdateInputDtoMealTime
-  >(foodRecord.mealTime);
-  const [beverageType, setBeverageType] = useState<
-    keyof typeof FoodRecordUpdateInputDtoBeverageType
-  >(foodRecord.beverageType);
   const [notes, setNotes] = useState(foodRecord.notes);
 
-  const handleCancel = () => {
-    navigate(`/residents/${resident.uid}/food-records`);
-  };
-
-  // 食事時間帯の日本語表示
-  const getMealTimeLabel = (mealTime: string) => {
-    switch (mealTime) {
-      case "BREAKFAST":
-        return "朝食";
-      case "LUNCH":
-        return "昼食";
-      case "DINNER":
-        return "夕食";
-      default:
-        return mealTime;
+  // 解析結果が返ってきたら、nullでない項目をフォームに反映
+  useEffect(() => {
+    if (actionData?.extracted) {
+      const { extracted } = actionData;
+      if (extracted.mainCoursePercentage !== null) {
+        setMainCoursePercentage(extracted.mainCoursePercentage);
+      }
+      if (extracted.sideDishPercentage !== null) {
+        setSideDishPercentage(extracted.sideDishPercentage);
+      }
+      if (extracted.soupPercentage !== null) {
+        setSoupPercentage(extracted.soupPercentage);
+      }
+      if (extracted.beverageType !== null) {
+        setBeverageType(
+          extracted.beverageType as FoodRecordUpdateInputDto["beverageType"]
+        );
+      }
+      if (extracted.beverageVolume !== null) {
+        setBeverageVolume(extracted.beverageVolume);
+      }
+      if (extracted.notes !== null) {
+        setNotes(extracted.notes);
+      }
     }
-  };
-
-  // 飲み物の種類の日本語表示
-  const getBeverageTypeLabel = (beverageType: string) => {
-    switch (beverageType) {
-      case "WATER":
-        return "水";
-      case "TEA":
-        return "お茶";
-      case "OTHER":
-        return "その他";
-      default:
-        return beverageType;
-    }
-  };
+  }, [actionData]);
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>食事記録の詳細</CardTitle>
-          <CardDescription>
-            {resident.familyName} {resident.givenName}さんの
-            {getMealTimeLabel(foodRecord.mealTime)}の記録 -
-            {format(new Date(foodRecord.recordedAt), "yyyy年MM月dd日 HH:mm", {
-              locale: ja,
-            })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form method="post" className="space-y-6">
-            <input
-              type="hidden"
-              name="recordedAt"
-              value={foodRecord.recordedAt}
-            />
+    <div className="grid grid-cols-2 gap-4">
+      {/* 左ペイン：食事記録フォーム */}
+      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <Card>
+          <CardHeader>
+            <CardTitle>食事記録の編集</CardTitle>
+            <CardDescription>
+              {format(new Date(foodRecord.recordedAt), "yyyy/MM/dd HH:mm")}の
+              {foodRecord.mealTime === "BREAKFAST"
+                ? "朝食"
+                : foodRecord.mealTime === "LUNCH"
+                ? "昼食"
+                : "夕食"}
+              の記録
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form method="post" className="space-y-6">
+              <input
+                type="hidden"
+                name="recordedAt"
+                value={foodRecord.recordedAt}
+              />
+              <input
+                type="hidden"
+                name="mealTime"
+                value={foodRecord.mealTime}
+              />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="mealTime">食事の時間帯</Label>
-                <Select
-                  name="mealTime"
-                  value={mealTime}
-                  onValueChange={(
-                    value: keyof typeof FoodRecordUpdateInputDtoMealTime
-                  ) => setMealTime(value)}
-                  required
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="mainCoursePercentage">主食の摂取量 (%)</Label>
+                  <Input
+                    type="number"
+                    id="mainCoursePercentage"
+                    name="mainCoursePercentage"
+                    value={mainCoursePercentage}
+                    onChange={(e) =>
+                      setMainCoursePercentage(Number(e.target.value))
+                    }
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sideDishPercentage">副食の摂取量 (%)</Label>
+                  <Input
+                    type="number"
+                    id="sideDishPercentage"
+                    name="sideDishPercentage"
+                    value={sideDishPercentage}
+                    onChange={(e) =>
+                      setSideDishPercentage(Number(e.target.value))
+                    }
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="soupPercentage">汁物の摂取量 (%)</Label>
+                  <Input
+                    type="number"
+                    id="soupPercentage"
+                    name="soupPercentage"
+                    value={soupPercentage}
+                    onChange={(e) => setSoupPercentage(Number(e.target.value))}
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="beverageType">飲み物の種類</Label>
+                  <Select
+                    name="beverageType"
+                    value={beverageType}
+                    onValueChange={(value) =>
+                      setBeverageType(
+                        value as FoodRecordUpdateInputDto["beverageType"]
+                      )
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="飲み物を選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="WATER">水</SelectItem>
+                      <SelectItem value="TEA">お茶</SelectItem>
+                      <SelectItem value="OTHER">その他</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="beverageVolume">飲み物の摂取量 (ml)</Label>
+                  <Input
+                    type="number"
+                    id="beverageVolume"
+                    name="beverageVolume"
+                    value={beverageVolume}
+                    onChange={(e) => setBeverageVolume(Number(e.target.value))}
+                    min={0}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="notes">備考</Label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="h-24"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button type="submit">保存</Button>
+              </div>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 右ペイン：文字起こし */}
+      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>文字起こし</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Form method="post">
+                <input type="hidden" name="intent" value="extract" />
+                <Button
+                  type="submit"
+                  variant="default"
+                  className="bg-black hover:bg-black/90"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="時間帯を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BREAKFAST">朝食</SelectItem>
-                    <SelectItem value="LUNCH">昼食</SelectItem>
-                    <SelectItem value="DINNER">夕食</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="beverageType">飲み物の種類</Label>
-                <Select
-                  name="beverageType"
-                  value={beverageType}
-                  onValueChange={(
-                    value: keyof typeof FoodRecordUpdateInputDtoBeverageType
-                  ) => setBeverageType(value)}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="飲み物を選択" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="WATER">水</SelectItem>
-                    <SelectItem value="TEA">お茶</SelectItem>
-                    <SelectItem value="OTHER">その他</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="mainCoursePercentage">主食の摂取率</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {mainCoursePercentage}%
-                  </span>
-                </div>
-                <Slider
-                  id="mainCoursePercentage"
-                  name="mainCoursePercentage"
-                  value={[mainCoursePercentage]}
-                  onValueChange={(values: number[]) =>
-                    setMainCoursePercentage(values[0])
-                  }
-                  min={0}
-                  max={100}
-                  step={5}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="sideDishPercentage">副食の摂取率</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {sideDishPercentage}%
-                  </span>
-                </div>
-                <Slider
-                  id="sideDishPercentage"
-                  name="sideDishPercentage"
-                  value={[sideDishPercentage]}
-                  onValueChange={(values: number[]) =>
-                    setSideDishPercentage(values[0])
-                  }
-                  min={0}
-                  max={100}
-                  step={5}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="soupPercentage">汁物の摂取率</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {soupPercentage}%
-                  </span>
-                </div>
-                <Slider
-                  id="soupPercentage"
-                  name="soupPercentage"
-                  value={[soupPercentage]}
-                  onValueChange={(values: number[]) =>
-                    setSoupPercentage(values[0])
-                  }
-                  min={0}
-                  max={100}
-                  step={5}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="beverageVolume">飲み物の摂取量 (ml)</Label>
-                <Input
-                  id="beverageVolume"
-                  name="beverageVolume"
-                  type="number"
-                  min={0}
-                  value={beverageVolume}
-                  onChange={(e) =>
-                    setBeverageVolume(parseInt(e.target.value, 10))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">メモ</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-between">
-              <Button
-                type="submit"
-                name="_action"
-                value="delete"
-                variant="destructive"
-              >
-                削除
-              </Button>
-
-              <div className="flex space-x-4">
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                  キャンセル
+                  文字起こしを解析
                 </Button>
-                <Button type="submit" name="_action" value="update">
-                  保存
-                </Button>
-              </div>
+              </Form>
             </div>
-          </Form>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="transcription" className="w-full">
+              <TabsContent value="transcription" className="space-y-4">
+                <Form method="post" className="space-y-4">
+                  <input
+                    type="hidden"
+                    name="intent"
+                    value="update_transcription"
+                  />
+                  <Textarea
+                    name="transcription"
+                    value={transcriptionText}
+                    onChange={(e) => setTranscriptionText(e.target.value)}
+                    className="min-h-[400px]"
+                  />
+                  <div className="flex justify-end">
+                    <Button type="submit" variant="secondary">
+                      文字起こしを保存
+                    </Button>
+                  </div>
+                </Form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

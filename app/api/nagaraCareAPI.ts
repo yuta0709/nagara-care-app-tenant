@@ -474,6 +474,21 @@ export interface TranscriptionInputDto {
   transcription: string;
 }
 
+export interface FoodRecordExtractedDto {
+  /** 主食の摂取率（0-100%） */
+  mainCoursePercentage: number;
+  /** 副食の摂取率（0-100%） */
+  sideDishPercentage: number;
+  /** 汁物の摂取率（0-100%） */
+  soupPercentage: number;
+  /** 飲み物の種類（水、お茶、その他） */
+  beverageType: string;
+  /** 飲み物の摂取量（ml） */
+  beverageVolume: number;
+  /** 特記事項 */
+  notes: string;
+}
+
 export interface BathRecordDto {
   /** UID */
   uid: string;
@@ -3064,7 +3079,7 @@ export const extractFoodRecord = (
 ) => {
       
       
-      return customInstance<string>(
+      return customInstance<FoodRecordExtractedDto>(
       {url: `/residents/${residentUid}/food-records/${uid}/extract`, method: 'POST', signal
     },
       );
