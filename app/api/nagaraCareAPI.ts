@@ -464,6 +464,16 @@ export interface FoodRecordUpdateInputDto {
   beverageVolume: number;
 }
 
+export interface TranscriptionDto {
+  /** 文字起こしテキスト */
+  transcription: string;
+}
+
+export interface TranscriptionInputDto {
+  /** 文字起こしテキスト */
+  transcription: string;
+}
+
 export interface BathRecordDto {
   /** UID */
   uid: string;
@@ -1035,16 +1045,6 @@ export interface AssessmentUpdateInputDto {
   legalSupport?: string;
   /** 個人因子 */
   personalTraits?: string;
-}
-
-export interface TranscriptionDto {
-  /** 文字起こしテキスト */
-  transcription: string;
-}
-
-export interface TranscriptionInputDto {
-  /** 文字起こしテキスト */
-  transcription: string;
 }
 
 export interface SubjectListResponseDto {
@@ -2765,6 +2765,360 @@ export const useDeleteFoodRecord = <TError = unknown,
     }
     
 /**
+ * @summary 食事記録の文字起こしを取得
+ */
+export const getFoodRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/food-records/${uid}/transcription`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetFoodRecordTranscriptionQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/food-records/${uid}/transcription`] as const;
+    }
+
+    
+export const getGetFoodRecordTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFoodRecordTranscriptionQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFoodRecordTranscription>>> = ({ signal }) => getFoodRecordTranscription(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetFoodRecordTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getFoodRecordTranscription>>>
+export type GetFoodRecordTranscriptionQueryError = unknown
+
+
+export function useGetFoodRecordTranscription<TData = Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFoodRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getFoodRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetFoodRecordTranscription<TData = Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFoodRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getFoodRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetFoodRecordTranscription<TData = Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 食事記録の文字起こしを取得
+ */
+
+export function useGetFoodRecordTranscription<TData = Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFoodRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetFoodRecordTranscriptionQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary 食事記録の文字起こしを追記
+ */
+export const appendFoodRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/food-records/${uid}/transcription`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getAppendFoodRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof appendFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['appendFoodRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendFoodRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  appendFoodRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppendFoodRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendFoodRecordTranscription>>>
+    export type AppendFoodRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type AppendFoodRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 食事記録の文字起こしを追記
+ */
+export const useAppendFoodRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof appendFoodRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getAppendFoodRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 食事記録の文字起こしを置換
+ */
+export const updateFoodRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/food-records/${uid}/transcription`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateFoodRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['updateFoodRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFoodRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  updateFoodRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFoodRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateFoodRecordTranscription>>>
+    export type UpdateFoodRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateFoodRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 食事記録の文字起こしを置換
+ */
+export const useUpdateFoodRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateFoodRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateFoodRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 食事記録の文字起こしを削除
+ */
+export const deleteFoodRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/residents/${residentUid}/food-records/${uid}/transcription`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteFoodRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['deleteFoodRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFoodRecordTranscription>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  deleteFoodRecordTranscription(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFoodRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFoodRecordTranscription>>>
+    
+    export type DeleteFoodRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 食事記録の文字起こしを削除
+ */
+export const useDeleteFoodRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFoodRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFoodRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteFoodRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 食事記録から情報を抽出
+ */
+export const extractFoodRecord = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<string>(
+      {url: `/residents/${residentUid}/food-records/${uid}/extract`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getExtractFoodRecordMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractFoodRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof extractFoodRecord>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['extractFoodRecord'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractFoodRecord>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  extractFoodRecord(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractFoodRecordMutationResult = NonNullable<Awaited<ReturnType<typeof extractFoodRecord>>>
+    
+    export type ExtractFoodRecordMutationError = unknown
+
+    /**
+ * @summary 食事記録から情報を抽出
+ */
+export const useExtractFoodRecord = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractFoodRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof extractFoodRecord>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getExtractFoodRecordMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
  * @summary 利用者の入浴記録一覧を取得
  */
 export const getBathRecords = (
@@ -3048,6 +3402,360 @@ export const useDeleteBathRecord = <TError = unknown,
     }
     
 /**
+ * @summary 入浴記録の文字起こしを取得
+ */
+export const getBathRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/bath-records/${uid}/transcription`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetBathRecordTranscriptionQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/bath-records/${uid}/transcription`] as const;
+    }
+
+    
+export const getGetBathRecordTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getBathRecordTranscription>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBathRecordTranscription>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBathRecordTranscriptionQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBathRecordTranscription>>> = ({ signal }) => getBathRecordTranscription(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBathRecordTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBathRecordTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getBathRecordTranscription>>>
+export type GetBathRecordTranscriptionQueryError = unknown
+
+
+export function useGetBathRecordTranscription<TData = Awaited<ReturnType<typeof getBathRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBathRecordTranscription>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBathRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getBathRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBathRecordTranscription<TData = Awaited<ReturnType<typeof getBathRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBathRecordTranscription>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBathRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getBathRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBathRecordTranscription<TData = Awaited<ReturnType<typeof getBathRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBathRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 入浴記録の文字起こしを取得
+ */
+
+export function useGetBathRecordTranscription<TData = Awaited<ReturnType<typeof getBathRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBathRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBathRecordTranscriptionQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary 入浴記録の文字起こしを追記
+ */
+export const appendBathRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/bath-records/${uid}/transcription`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getAppendBathRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendBathRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof appendBathRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['appendBathRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendBathRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  appendBathRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppendBathRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendBathRecordTranscription>>>
+    export type AppendBathRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type AppendBathRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 入浴記録の文字起こしを追記
+ */
+export const useAppendBathRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendBathRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof appendBathRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getAppendBathRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 入浴記録の文字起こしを置換
+ */
+export const updateBathRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/bath-records/${uid}/transcription`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateBathRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBathRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateBathRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['updateBathRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBathRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  updateBathRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBathRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateBathRecordTranscription>>>
+    export type UpdateBathRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateBathRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 入浴記録の文字起こしを置換
+ */
+export const useUpdateBathRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBathRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateBathRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateBathRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 入浴記録の文字起こしを削除
+ */
+export const deleteBathRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/residents/${residentUid}/bath-records/${uid}/transcription`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteBathRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBathRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBathRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['deleteBathRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBathRecordTranscription>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  deleteBathRecordTranscription(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBathRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBathRecordTranscription>>>
+    
+    export type DeleteBathRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 入浴記録の文字起こしを削除
+ */
+export const useDeleteBathRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBathRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBathRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteBathRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 入浴記録から情報を抽出
+ */
+export const extractBathRecord = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<string>(
+      {url: `/residents/${residentUid}/bath-records/${uid}/extract`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getExtractBathRecordMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractBathRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof extractBathRecord>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['extractBathRecord'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractBathRecord>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  extractBathRecord(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractBathRecordMutationResult = NonNullable<Awaited<ReturnType<typeof extractBathRecord>>>
+    
+    export type ExtractBathRecordMutationError = unknown
+
+    /**
+ * @summary 入浴記録から情報を抽出
+ */
+export const useExtractBathRecord = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractBathRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof extractBathRecord>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getExtractBathRecordMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
  * @summary 利用者の排泄記録一覧を取得
  */
 export const getEliminationRecords = (
@@ -3326,6 +4034,360 @@ export const useDeleteEliminationRecord = <TError = unknown,
       > => {
 
       const mutationOptions = getDeleteEliminationRecordMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 排泄記録の文字起こしを取得
+ */
+export const getEliminationRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/elimination-records/${uid}/transcription`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetEliminationRecordTranscriptionQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/elimination-records/${uid}/transcription`] as const;
+    }
+
+    
+export const getGetEliminationRecordTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEliminationRecordTranscriptionQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEliminationRecordTranscription>>> = ({ signal }) => getEliminationRecordTranscription(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetEliminationRecordTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getEliminationRecordTranscription>>>
+export type GetEliminationRecordTranscriptionQueryError = unknown
+
+
+export function useGetEliminationRecordTranscription<TData = Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEliminationRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getEliminationRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetEliminationRecordTranscription<TData = Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEliminationRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getEliminationRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetEliminationRecordTranscription<TData = Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 排泄記録の文字起こしを取得
+ */
+
+export function useGetEliminationRecordTranscription<TData = Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEliminationRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetEliminationRecordTranscriptionQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary 排泄記録の文字起こしを追記
+ */
+export const appendEliminationRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/elimination-records/${uid}/transcription`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getAppendEliminationRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof appendEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['appendEliminationRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendEliminationRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  appendEliminationRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppendEliminationRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendEliminationRecordTranscription>>>
+    export type AppendEliminationRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type AppendEliminationRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 排泄記録の文字起こしを追記
+ */
+export const useAppendEliminationRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof appendEliminationRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getAppendEliminationRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 排泄記録の文字起こしを置換
+ */
+export const updateEliminationRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/elimination-records/${uid}/transcription`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateEliminationRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['updateEliminationRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEliminationRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  updateEliminationRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEliminationRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateEliminationRecordTranscription>>>
+    export type UpdateEliminationRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateEliminationRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 排泄記録の文字起こしを置換
+ */
+export const useUpdateEliminationRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateEliminationRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateEliminationRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 排泄記録の文字起こしを削除
+ */
+export const deleteEliminationRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/residents/${residentUid}/elimination-records/${uid}/transcription`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteEliminationRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['deleteEliminationRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteEliminationRecordTranscription>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  deleteEliminationRecordTranscription(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteEliminationRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteEliminationRecordTranscription>>>
+    
+    export type DeleteEliminationRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 排泄記録の文字起こしを削除
+ */
+export const useDeleteEliminationRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEliminationRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteEliminationRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteEliminationRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 排泄記録から情報を抽出
+ */
+export const extractEliminationRecord = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<string>(
+      {url: `/residents/${residentUid}/elimination-records/${uid}/extract`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getExtractEliminationRecordMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractEliminationRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof extractEliminationRecord>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['extractEliminationRecord'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractEliminationRecord>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  extractEliminationRecord(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractEliminationRecordMutationResult = NonNullable<Awaited<ReturnType<typeof extractEliminationRecord>>>
+    
+    export type ExtractEliminationRecordMutationError = unknown
+
+    /**
+ * @summary 排泄記録から情報を抽出
+ */
+export const useExtractEliminationRecord = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractEliminationRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof extractEliminationRecord>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getExtractEliminationRecordMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
@@ -3892,6 +4954,360 @@ export const useDeleteBeverageRecord = <TError = unknown,
       > => {
 
       const mutationOptions = getDeleteBeverageRecordMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 飲料記録の文字起こしを取得
+ */
+export const getBeverageRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/beverage-records/${uid}/transcription`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetBeverageRecordTranscriptionQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/beverage-records/${uid}/transcription`] as const;
+    }
+
+    
+export const getGetBeverageRecordTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBeverageRecordTranscriptionQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBeverageRecordTranscription>>> = ({ signal }) => getBeverageRecordTranscription(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBeverageRecordTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getBeverageRecordTranscription>>>
+export type GetBeverageRecordTranscriptionQueryError = unknown
+
+
+export function useGetBeverageRecordTranscription<TData = Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBeverageRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getBeverageRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBeverageRecordTranscription<TData = Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBeverageRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getBeverageRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBeverageRecordTranscription<TData = Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 飲料記録の文字起こしを取得
+ */
+
+export function useGetBeverageRecordTranscription<TData = Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBeverageRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBeverageRecordTranscriptionQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary 飲料記録の文字起こしを追記
+ */
+export const appendBeverageRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/beverage-records/${uid}/transcription`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getAppendBeverageRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof appendBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['appendBeverageRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendBeverageRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  appendBeverageRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppendBeverageRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendBeverageRecordTranscription>>>
+    export type AppendBeverageRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type AppendBeverageRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 飲料記録の文字起こしを追記
+ */
+export const useAppendBeverageRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof appendBeverageRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getAppendBeverageRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 飲料記録の文字起こしを置換
+ */
+export const updateBeverageRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/beverage-records/${uid}/transcription`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateBeverageRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['updateBeverageRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBeverageRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  updateBeverageRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBeverageRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateBeverageRecordTranscription>>>
+    export type UpdateBeverageRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateBeverageRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 飲料記録の文字起こしを置換
+ */
+export const useUpdateBeverageRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateBeverageRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateBeverageRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 飲料記録の文字起こしを削除
+ */
+export const deleteBeverageRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/residents/${residentUid}/beverage-records/${uid}/transcription`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteBeverageRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['deleteBeverageRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBeverageRecordTranscription>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  deleteBeverageRecordTranscription(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBeverageRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBeverageRecordTranscription>>>
+    
+    export type DeleteBeverageRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 飲料記録の文字起こしを削除
+ */
+export const useDeleteBeverageRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeverageRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBeverageRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteBeverageRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 飲料記録から情報を抽出
+ */
+export const extractBeverageRecord = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<string>(
+      {url: `/residents/${residentUid}/beverage-records/${uid}/extract`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getExtractBeverageRecordMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractBeverageRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof extractBeverageRecord>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['extractBeverageRecord'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractBeverageRecord>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  extractBeverageRecord(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractBeverageRecordMutationResult = NonNullable<Awaited<ReturnType<typeof extractBeverageRecord>>>
+    
+    export type ExtractBeverageRecordMutationError = unknown
+
+    /**
+ * @summary 飲料記録から情報を抽出
+ */
+export const useExtractBeverageRecord = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractBeverageRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof extractBeverageRecord>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getExtractBeverageRecordMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
