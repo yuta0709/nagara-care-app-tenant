@@ -17,11 +17,15 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
 import {
   getResident,
   createFoodRecord,
   FoodRecordCreateInputDtoMealTime,
 } from "~/api/nagaraCareAPI";
+import { format, parse } from "date-fns";
+import { ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { Switch } from "~/components/ui/switch";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const { uid } = params;
@@ -44,13 +48,36 @@ export async function clientAction({
   const mealTime = formData.get(
     "mealTime"
   ) as keyof typeof FoodRecordCreateInputDtoMealTime;
+  const useCustomDateTime = formData.get("useCustomDateTime") === "true";
   const date = formData.get("date") as string;
+  const time = formData.get("time") as string;
 
-  // 日付が指定されている場合はその日の12時を使用、そうでなければ現在時刻
+  // 日付と時間が明示的に指定されている場合はそれを使用、そうでなければ現在時刻
   let recordedAt: string;
-  if (date) {
+  if (useCustomDateTime && date) {
     const dateObj = new Date(date);
-    dateObj.setHours(12, 0, 0, 0);
+
+    // 時間が指定されている場合は、その時間を設定
+    if (time) {
+      const [hours, minutes] = time.split(":").map(Number);
+      dateObj.setHours(hours, minutes, 0, 0);
+    } else {
+      // 時間が指定されていない場合は、食事時間帯に応じたデフォルト時間を設定
+      switch (mealTime) {
+        case "BREAKFAST":
+          dateObj.setHours(7, 0, 0, 0);
+          break;
+        case "LUNCH":
+          dateObj.setHours(12, 0, 0, 0);
+          break;
+        case "DINNER":
+          dateObj.setHours(18, 0, 0, 0);
+          break;
+        default:
+          dateObj.setHours(12, 0, 0, 0);
+      }
+    }
+
     recordedAt = dateObj.toISOString();
   } else {
     recordedAt = new Date().toISOString();
@@ -81,13 +108,44 @@ export default function NewFoodRecordPage({
   const [selectedMealTime, setSelectedMealTime] = useState<string>(
     searchParams.get("mealTime") || ""
   );
-  const [date, setDate] = useState<string>(searchParams.get("date") || "");
+
+  // 日付と時間を明示的に指定するかどうか
+  const [useCustomDateTime, setUseCustomDateTime] = useState(false);
+
+  // 日付の初期値を設定
+  const today = format(new Date(), "yyyy-MM-dd");
+  const [date, setDate] = useState<string>(searchParams.get("date") || today);
+
+  // 時間の初期値を設定
+  const now = new Date();
+  const defaultTime = format(now, "HH:mm");
+  const [time, setTime] = useState<string>(defaultTime);
+
+  // 食事時間帯が変更されたときに、デフォルトの時間を設定
+  useEffect(() => {
+    if (selectedMealTime) {
+      switch (selectedMealTime) {
+        case "BREAKFAST":
+          setTime("07:00");
+          break;
+        case "LUNCH":
+          setTime("12:00");
+          break;
+        case "DINNER":
+          setTime("18:00");
+          break;
+      }
+    }
+  }, [selectedMealTime]);
 
   const handleCancel = () => {
     navigate(`/residents/${resident.uid}/food-records`);
   };
 
-  const isFormValid = selectedMealTime;
+  // 日付と時間を明示的に指定する場合は、両方の入力が必要
+  // 指定しない場合は、食事時間帯のみ必須
+  const isFormValid =
+    selectedMealTime && (!useCustomDateTime || (date && time));
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -100,7 +158,11 @@ export default function NewFoodRecordPage({
         </CardHeader>
         <CardContent>
           <Form method="post" className="space-y-6">
-            {date && <input type="hidden" name="date" value={date} />}
+            <input
+              type="hidden"
+              name="useCustomDateTime"
+              value={useCustomDateTime.toString()}
+            />
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -120,6 +182,52 @@ export default function NewFoodRecordPage({
                     <SelectItem value="DINNER">夕食</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="border rounded-md p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium">日時を指定する</span>
+                  </div>
+                  <Switch
+                    checked={useCustomDateTime}
+                    onCheckedChange={setUseCustomDateTime}
+                  />
+                </div>
+
+                {useCustomDateTime && (
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">日付</Label>
+                      <Input
+                        type="date"
+                        id="date"
+                        name="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        required={useCustomDateTime}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="time">時間</Label>
+                      <Input
+                        type="time"
+                        id="time"
+                        name="time"
+                        value={time}
+                        onChange={(e) => setTime(e.target.value)}
+                        required={useCustomDateTime}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-2 text-sm text-gray-500">
+                  {useCustomDateTime
+                    ? "指定した日時で記録します"
+                    : "現在の日時で記録します"}
+                </div>
               </div>
             </div>
 
