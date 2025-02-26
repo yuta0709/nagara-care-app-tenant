@@ -87,9 +87,16 @@ export default function AuthenticatedResidents({
                       {resident.gender === "MALE" ? "男性" : "女性"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/residents/${resident.uid}`}>詳細</Link>
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/residents/${resident.uid}`}>詳細</Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/residents/${resident.uid}/edit`}>
+                            編集
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

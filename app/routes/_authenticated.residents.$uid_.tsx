@@ -49,6 +49,9 @@ export default function ResidentDetailPage({
             {resident.familyNameFurigana} {resident.givenNameFurigana}
           </p>
         </div>
+        <Button asChild>
+          <Link to={`/residents/${params.uid}/edit`}>編集</Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
