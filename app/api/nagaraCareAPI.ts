@@ -326,6 +326,24 @@ export interface FoodRecordListResponseDto {
   total: number;
 }
 
+export interface DailyFoodRecordsDto {
+  /** 日付 */
+  date: string;
+  /** 朝食の記録 */
+  breakfast?: FoodRecordDto;
+  /** 昼食の記録 */
+  lunch?: FoodRecordDto;
+  /** 夕食の記録 */
+  dinner?: FoodRecordDto;
+}
+
+export interface DailyFoodRecordsListResponseDto {
+  /** 日別食事記録一覧 */
+  items: DailyFoodRecordsDto[];
+  /** 総日数 */
+  total: number;
+}
+
 /**
  * 食事の時間帯
  */
@@ -1089,6 +1107,17 @@ export interface SubjectUpdateInputDto {
   /** 性別 */
   gender: SubjectUpdateInputDtoGender;
 }
+
+export type GetDailyFoodRecordsParams = {
+/**
+ * 開始日（YYYY-MM-DD形式）。指定しない場合は過去30日間
+ */
+startDate?: string;
+/**
+ * 終了日（YYYY-MM-DD形式）。指定しない場合は現在日
+ */
+endDate?: string;
+};
 
 
 
@@ -2510,6 +2539,102 @@ export const useCreateFoodRecord = <TError = unknown,
       return useMutation(mutationOptions);
     }
     
+/**
+ * @summary 利用者の日別食事記録一覧を取得
+ */
+export const getDailyFoodRecords = (
+    residentUid: string,
+    params?: GetDailyFoodRecordsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<DailyFoodRecordsListResponseDto>(
+      {url: `/residents/${residentUid}/food-records/daily`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+export const getGetDailyFoodRecordsQueryKey = (residentUid: string,
+    params?: GetDailyFoodRecordsParams,) => {
+    return [`/residents/${residentUid}/food-records/daily`, ...(params ? [params]: [])] as const;
+    }
+
+    
+export const getGetDailyFoodRecordsQueryOptions = <TData = Awaited<ReturnType<typeof getDailyFoodRecords>>, TError = unknown>(residentUid: string,
+    params?: GetDailyFoodRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyFoodRecords>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDailyFoodRecordsQueryKey(residentUid,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDailyFoodRecords>>> = ({ signal }) => getDailyFoodRecords(residentUid,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDailyFoodRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDailyFoodRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof getDailyFoodRecords>>>
+export type GetDailyFoodRecordsQueryError = unknown
+
+
+export function useGetDailyFoodRecords<TData = Awaited<ReturnType<typeof getDailyFoodRecords>>, TError = unknown>(
+ residentUid: string,
+    params: undefined |  GetDailyFoodRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyFoodRecords>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyFoodRecords>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyFoodRecords>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyFoodRecords<TData = Awaited<ReturnType<typeof getDailyFoodRecords>>, TError = unknown>(
+ residentUid: string,
+    params?: GetDailyFoodRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyFoodRecords>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyFoodRecords>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyFoodRecords>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyFoodRecords<TData = Awaited<ReturnType<typeof getDailyFoodRecords>>, TError = unknown>(
+ residentUid: string,
+    params?: GetDailyFoodRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyFoodRecords>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 利用者の日別食事記録一覧を取得
+ */
+
+export function useGetDailyFoodRecords<TData = Awaited<ReturnType<typeof getDailyFoodRecords>>, TError = unknown>(
+ residentUid: string,
+    params?: GetDailyFoodRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyFoodRecords>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDailyFoodRecordsQueryOptions(residentUid,params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
 /**
  * @summary 食事記録を更新
  */

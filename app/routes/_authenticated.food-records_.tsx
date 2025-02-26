@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Plus as PlusIcon } from "lucide-react";
 import { getMe, getResidents } from "~/api/nagaraCareAPI";
-import type { Route } from "./+types/_authenticated.residents_";
+import type { Route } from "./+types/_authenticated.food-records_";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
@@ -21,34 +21,17 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
   };
 }
 
-export default function AuthenticatedResidents({
-  loaderData,
-}: Route.ComponentProps) {
+export default function FoodRecordsPage({ loaderData }: Route.ComponentProps) {
   const { residents } = loaderData;
-
-  // 年齢を計算する関数
-  const calculateAge = (dateOfBirth: string) => {
-    const birthDate = new Date(dateOfBirth);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
-    ) {
-      age--;
-    }
-    return age;
-  };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>利用者一覧</CardTitle>
+            <CardTitle>食事記録</CardTitle>
             <Button asChild>
-              <Link to="/residents/new">
+              <Link to="/food-records/new">
                 <PlusIcon className="mr-2 h-4 w-4" />
                 新規作成
               </Link>
@@ -64,7 +47,7 @@ export default function AuthenticatedResidents({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>氏名</TableHead>
+                  <TableHead>利用者名</TableHead>
                   <TableHead>フリガナ</TableHead>
                   <TableHead>年齢</TableHead>
                   <TableHead>性別</TableHead>
@@ -88,7 +71,9 @@ export default function AuthenticatedResidents({
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" asChild>
-                        <Link to={`/residents/${resident.uid}`}>詳細</Link>
+                        <Link to={`/food-records/residents/${resident.uid}`}>
+                          詳細
+                        </Link>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -100,4 +85,19 @@ export default function AuthenticatedResidents({
       </Card>
     </div>
   );
+}
+
+// 年齢を計算する関数
+function calculateAge(dateOfBirth: string) {
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+  return age;
 }
