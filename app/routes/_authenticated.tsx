@@ -57,6 +57,12 @@ export default function AuthenticatedLayout({
                 >
                   利用者
                 </Link>
+                <Link
+                  to="/staff"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  スタッフ
+                </Link>
               </div>
 
               {/* 右側: ユーザー情報とログアウト */}
