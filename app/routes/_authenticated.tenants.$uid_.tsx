@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/table";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { format } from "date-fns";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon } from "lucide-react";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const tenant = await getTenant(params.uid);

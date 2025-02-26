@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { format } from "date-fns";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon } from "lucide-react";
 
 export default function TenantsPage() {
   const { data: tenantsData, isLoading } = useGetTenants();

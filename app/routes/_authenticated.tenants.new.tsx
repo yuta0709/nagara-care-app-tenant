@@ -11,7 +11,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon } from "lucide-react";
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData();
