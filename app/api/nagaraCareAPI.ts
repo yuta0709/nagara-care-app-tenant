@@ -4786,6 +4786,296 @@ export const useDeleteDailyRecord = <TError = unknown,
     }
     
 /**
+ * @summary 日常記録の文字起こしを取得
+ */
+export const getDailyRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/daily-records/${uid}/transcription`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetDailyRecordTranscriptionQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/daily-records/${uid}/transcription`] as const;
+    }
+
+    
+export const getGetDailyRecordTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDailyRecordTranscriptionQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDailyRecordTranscription>>> = ({ signal }) => getDailyRecordTranscription(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDailyRecordTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getDailyRecordTranscription>>>
+export type GetDailyRecordTranscriptionQueryError = unknown
+
+
+export function useGetDailyRecordTranscription<TData = Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyRecordTranscription<TData = Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyRecordTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyRecordTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyRecordTranscription<TData = Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 日常記録の文字起こしを取得
+ */
+
+export function useGetDailyRecordTranscription<TData = Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecordTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDailyRecordTranscriptionQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary 日常記録の文字起こしを追記
+ */
+export const appendDailyRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/daily-records/${uid}/transcription`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getAppendDailyRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof appendDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['appendDailyRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendDailyRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  appendDailyRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AppendDailyRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendDailyRecordTranscription>>>
+    export type AppendDailyRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type AppendDailyRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 日常記録の文字起こしを追記
+ */
+export const useAppendDailyRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof appendDailyRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getAppendDailyRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 日常記録の文字起こしを置換
+ */
+export const updateDailyRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<TranscriptionDto>(
+      {url: `/residents/${residentUid}/daily-records/${uid}/transcription`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateDailyRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['updateDailyRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDailyRecordTranscription>>, {residentUid: unknown;uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {residentUid,uid,data} = props ?? {};
+
+          return  updateDailyRecordTranscription(residentUid,uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDailyRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateDailyRecordTranscription>>>
+    export type UpdateDailyRecordTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateDailyRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 日常記録の文字起こしを置換
+ */
+export const useUpdateDailyRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateDailyRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateDailyRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 日常記録の文字起こしを削除
+ */
+export const deleteDailyRecordTranscription = (
+    residentUid: unknown,
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/residents/${residentUid}/daily-records/${uid}/transcription`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteDailyRecordTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext> => {
+    
+const mutationKey = ['deleteDailyRecordTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDailyRecordTranscription>>, {residentUid: unknown;uid: string}> = (props) => {
+          const {residentUid,uid} = props ?? {};
+
+          return  deleteDailyRecordTranscription(residentUid,uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDailyRecordTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDailyRecordTranscription>>>
+    
+    export type DeleteDailyRecordTranscriptionMutationError = unknown
+
+    /**
+ * @summary 日常記録の文字起こしを削除
+ */
+export const useDeleteDailyRecordTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDailyRecordTranscription>>, TError,{residentUid: unknown;uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDailyRecordTranscription>>,
+        TError,
+        {residentUid: unknown;uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteDailyRecordTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
  * @summary 利用者の飲料記録一覧を取得
  */
 export const getBeverageRecords = (

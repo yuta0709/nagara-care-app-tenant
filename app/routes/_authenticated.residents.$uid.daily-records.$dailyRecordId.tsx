@@ -1,6 +1,6 @@
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSubmit } from "react-router";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, differenceInYears } from "date-fns";
 import { ja } from "date-fns/locale";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -23,40 +23,39 @@ import {
 } from "~/components/ui/select";
 import { Form } from "react-router";
 import { redirect } from "react-router";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   getDailyRecord,
   updateDailyRecord,
   deleteDailyRecord,
   getResident,
+  getDailyRecordTranscription,
+  updateDailyRecordTranscription,
   DailyRecordUpdateInputDtoDailyStatus,
   type DailyRecordDto,
 } from "~/api/nagaraCareAPI";
+import type { Route } from "./+types/_authenticated.residents.$uid.daily-records.$dailyRecordId";
 
-export async function clientLoader({
-  params,
-}: {
-  params: { uid: string; dailyRecordId: string };
-}) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const { uid, dailyRecordId } = params;
   if (!uid) throw new Error("利用者IDが指定されていません");
   if (!dailyRecordId) throw new Error("日常記録IDが指定されていません");
 
   const resident = await getResident(uid, uid);
   const dailyRecord = await getDailyRecord(uid, dailyRecordId);
+  const transcription = await getDailyRecordTranscription(uid, dailyRecordId);
 
   return {
     resident,
     dailyRecord,
+    transcription,
   };
 }
 
 export async function clientAction({
   request,
   params,
-}: {
-  request: Request;
-  params: { uid: string; dailyRecordId: string };
-}) {
+}: Route.ClientActionArgs) {
   const { uid, dailyRecordId } = params;
   if (!uid) throw new Error("利用者IDが指定されていません");
   if (!dailyRecordId) throw new Error("日常記録IDが指定されていません");
@@ -67,6 +66,14 @@ export async function clientAction({
   if (intent === "delete") {
     await deleteDailyRecord(uid, dailyRecordId);
     return redirect(`/residents/${uid}/daily-records`);
+  }
+
+  if (intent === "update_transcription") {
+    const transcription = formData.get("transcription") as string;
+    await updateDailyRecordTranscription(uid, dailyRecordId, {
+      transcription,
+    });
+    return null;
   }
 
   const recordedAt = formData.get("recordedAt") as string;
@@ -84,19 +91,24 @@ export async function clientAction({
   return redirect(`/residents/${uid}/daily-records`);
 }
 
-export default function DailyRecordPage({
-  loaderData,
-}: {
-  loaderData: { resident: any; dailyRecord: DailyRecordDto };
-}) {
-  const { resident, dailyRecord } = loaderData;
+export default function DailyRecordPage({ loaderData }: Route.ComponentProps) {
+  const { resident, dailyRecord, transcription } = loaderData;
   const navigate = useNavigate();
   const params = useParams();
+  const submit = useSubmit();
+  const [transcriptionText, setTranscriptionText] = useState(
+    transcription.transcription
+  );
 
   const [dailyStatus, setDailyStatus] = useState<
     "NORMAL" | "WARNING" | "ALERT"
   >(dailyRecord.dailyStatus);
   const [notes, setNotes] = useState(dailyRecord.notes);
+
+  // 年齢を計算する関数
+  const calculateAge = (dateOfBirth: string) => {
+    return differenceInYears(new Date(), new Date(dateOfBirth));
+  };
 
   const handleBack = () => {
     navigate(`/residents/${params.uid}/daily-records`);
@@ -104,15 +116,12 @@ export default function DailyRecordPage({
 
   const handleDelete = () => {
     if (window.confirm("この日常記録を削除してもよろしいですか？")) {
-      const form = document.createElement("form");
-      form.method = "post";
-      const input = document.createElement("input");
-      input.name = "intent";
-      input.value = "delete";
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
+      const formData = new FormData();
+      formData.append("intent", "delete");
+
+      submit(formData, {
+        method: "post",
+      });
     }
   };
 
@@ -209,31 +218,39 @@ export default function DailyRecordPage({
           </Card>
         </div>
 
-        {/* 右ペイン：利用者情報 */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>利用者情報</CardTitle>
+        {/* 右ペイン：文字起こし */}
+        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-6rem)]">
+          <Card className="shadow-md">
+            <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
+              <CardTitle className="text-xl">文字起こし</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div>
-                  <span className="font-medium">氏名：</span>
-                  {resident.familyName} {resident.givenName}
-                </div>
-                <div>
-                  <span className="font-medium">年齢：</span>
-                  {resident.age}歳
-                </div>
-                <div>
-                  <span className="font-medium">性別：</span>
-                  {resident.gender === "MALE" ? "男性" : "女性"}
-                </div>
-                <div>
-                  <span className="font-medium">要介護度：</span>
-                  {resident.careLevel}
-                </div>
-              </div>
+            <CardContent className="pt-6">
+              <Tabs defaultValue="transcription" className="w-full">
+                <TabsContent value="transcription" className="space-y-4">
+                  <Form method="post" className="space-y-4">
+                    <input
+                      type="hidden"
+                      name="intent"
+                      value="update_transcription"
+                    />
+                    <Textarea
+                      name="transcription"
+                      value={transcriptionText}
+                      onChange={(e) => setTranscriptionText(e.target.value)}
+                      className="min-h-[400px]"
+                    />
+                    <div className="flex justify-end">
+                      <Button
+                        type="submit"
+                        variant="secondary"
+                        className="px-6"
+                      >
+                        文字起こしを保存
+                      </Button>
+                    </div>
+                  </Form>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
