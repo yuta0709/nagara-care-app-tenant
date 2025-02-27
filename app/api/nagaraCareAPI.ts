@@ -4562,6 +4562,101 @@ export const useCreateDailyRecord = <TError = unknown,
     }
     
 /**
+ * @summary 個別の日常記録を取得
+ */
+export const getDailyRecord = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<DailyRecordDto>(
+      {url: `/residents/${residentUid}/daily-records/${uid}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetDailyRecordQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/daily-records/${uid}`] as const;
+    }
+
+    
+export const getGetDailyRecordQueryOptions = <TData = Awaited<ReturnType<typeof getDailyRecord>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecord>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDailyRecordQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDailyRecord>>> = ({ signal }) => getDailyRecord(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDailyRecord>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDailyRecordQueryResult = NonNullable<Awaited<ReturnType<typeof getDailyRecord>>>
+export type GetDailyRecordQueryError = unknown
+
+
+export function useGetDailyRecord<TData = Awaited<ReturnType<typeof getDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecord>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyRecord>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyRecord>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyRecord<TData = Awaited<ReturnType<typeof getDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecord>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDailyRecord>>,
+          TError,
+          Awaited<ReturnType<typeof getDailyRecord>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDailyRecord<TData = Awaited<ReturnType<typeof getDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecord>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 個別の日常記録を取得
+ */
+
+export function useGetDailyRecord<TData = Awaited<ReturnType<typeof getDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDailyRecord>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDailyRecordQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary 日常記録を更新
  */
 export const updateDailyRecord = (
