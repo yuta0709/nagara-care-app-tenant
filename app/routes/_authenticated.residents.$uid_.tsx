@@ -5,7 +5,7 @@ import type { Route } from "./+types/_authenticated.residents.$uid_";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { Utensils, ChevronLeft, Droplets } from "lucide-react";
+import { ArrowLeft, Pencil, Utensils, Droplets, Bath } from "lucide-react";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const { uid } = params;
@@ -52,7 +52,7 @@ export default function ResidentDetailPage({
           className="flex items-center text-muted-foreground"
           onClick={handleBack}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ArrowLeft className="mr-1 h-4 w-4" />
           戻る
         </Button>
       </div>
@@ -122,6 +122,12 @@ export default function ResidentDetailPage({
                 <Link to={`/residents/${params.uid}/elimination-records`}>
                   <Droplets className="mr-2 h-4 w-4" />
                   排泄記録
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link to={`/residents/${params.uid}/bath-records`}>
+                  <Bath className="mr-2 h-4 w-4" />
+                  入浴記録
                 </Link>
               </Button>
               {/* 他の記録へのリンクをここに追加 */}

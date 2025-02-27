@@ -70,6 +70,12 @@ export default function AuthenticatedLayout({
                   排泄記録
                 </Link>
                 <Link
+                  to="/bath-records"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  入浴記録
+                </Link>
+                <Link
                   to="/staff"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                 >
