@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "~/components/ui/card";
 import {
   Select,
@@ -23,9 +24,10 @@ import {
   createFoodRecord,
   FoodRecordCreateInputDtoMealTime,
 } from "~/api/nagaraCareAPI";
-import { format, parse } from "date-fns";
-import { ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { format } from "date-fns";
+import { ChevronLeft, Clock } from "lucide-react";
 import { Switch } from "~/components/ui/switch";
+import { Separator } from "~/components/ui/separator";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const { uid } = params;
@@ -142,21 +144,41 @@ export default function NewFoodRecordPage({
     navigate(`/residents/${resident.uid}/food-records`);
   };
 
+  const handleBack = () => {
+    navigate(`/residents/${resident.uid}/food-records`);
+  };
+
   // 日付と時間を明示的に指定する場合は、両方の入力が必要
   // 指定しない場合は、食事時間帯のみ必須
   const isFormValid =
     selectedMealTime && (!useCustomDateTime || (date && time));
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>新規食事記録</CardTitle>
+    <div className="max-w-2xl mx-auto p-4">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-muted-foreground"
+          onClick={handleBack}
+        >
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          戻る
+        </Button>
+      </div>
+
+      <Card className="shadow-md">
+        <CardHeader className="bg-muted/50">
+          <CardTitle className="text-xl">新規食事記録</CardTitle>
           <CardDescription>
-            {resident.familyName} {resident.givenName}さんの食事記録を作成します
+            <span className="font-medium">
+              {resident.familyName} {resident.givenName}
+            </span>
+            さんの食事記録を作成します
           </CardDescription>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="pt-6">
           <Form method="post" className="space-y-6">
             <input
               type="hidden"
@@ -164,16 +186,18 @@ export default function NewFoodRecordPage({
               value={useCustomDateTime.toString()}
             />
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="mealTime">食事の時間帯</Label>
+                <Label htmlFor="mealTime" className="text-base font-medium">
+                  食事の時間帯
+                </Label>
                 <Select
                   name="mealTime"
                   value={selectedMealTime}
                   onValueChange={setSelectedMealTime}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="時間帯を選択" />
                   </SelectTrigger>
                   <SelectContent>
@@ -184,11 +208,15 @@ export default function NewFoodRecordPage({
                 </Select>
               </div>
 
-              <div className="border rounded-md p-4">
-                <div className="flex items-center justify-between">
+              <Separator className="my-4" />
+
+              <div className="border rounded-md p-5 bg-muted/30">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium">日時を指定する</span>
+                    <Clock className="h-5 w-5 text-primary" />
+                    <span className="font-medium text-base">
+                      日時を指定する
+                    </span>
                   </div>
                   <Switch
                     checked={useCustomDateTime}
@@ -207,6 +235,7 @@ export default function NewFoodRecordPage({
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
                         required={useCustomDateTime}
+                        className="h-11"
                       />
                     </div>
                     <div className="space-y-2">
@@ -218,12 +247,13 @@ export default function NewFoodRecordPage({
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
                         required={useCustomDateTime}
+                        className="h-11"
                       />
                     </div>
                   </div>
                 )}
 
-                <div className="mt-2 text-sm text-gray-500">
+                <div className="mt-3 text-sm text-muted-foreground">
                   {useCustomDateTime
                     ? "指定した日時で記録します"
                     : "現在の日時で記録します"}
@@ -231,14 +261,14 @@ export default function NewFoodRecordPage({
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
+            <CardFooter className="flex justify-end space-x-4 px-0 pt-4">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 キャンセル
               </Button>
-              <Button type="submit" disabled={!isFormValid}>
+              <Button type="submit" disabled={!isFormValid} className="px-6">
                 作成
               </Button>
-            </div>
+            </CardFooter>
           </Form>
         </CardContent>
       </Card>

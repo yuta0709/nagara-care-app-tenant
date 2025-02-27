@@ -1,11 +1,11 @@
-import { Link, useParams } from "react-router";
+import { Link, useParams, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { getResident } from "~/api/nagaraCareAPI";
 import type { Route } from "./+types/_authenticated.residents.$uid_";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { Utensils } from "lucide-react";
+import { Utensils, ChevronLeft } from "lucide-react";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const { uid } = params;
@@ -22,6 +22,11 @@ export default function ResidentDetailPage({
 }: Route.ComponentProps) {
   const { resident } = loaderData;
   const params = useParams();
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate(`/residents`);
+  };
 
   // 年齢を計算する関数
   const calculateAge = (dateOfBirth: string) => {
@@ -40,6 +45,18 @@ export default function ResidentDetailPage({
 
   return (
     <div className="space-y-6">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-muted-foreground"
+          onClick={handleBack}
+        >
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          戻る
+        </Button>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">

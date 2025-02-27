@@ -31,6 +31,8 @@ import {
 } from "~/api/nagaraCareAPI";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { ChevronLeft } from "lucide-react";
+import { Separator } from "~/components/ui/separator";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const { residentUid, uid } = params;
@@ -132,6 +134,10 @@ export default function FoodRecordDetailPage({
     navigate(`/food-records/residents/${resident.uid}`);
   };
 
+  const handleBack = () => {
+    navigate(`/food-records/residents/${resident.uid}`);
+  };
+
   // 食事時間帯の日本語表示
   const getMealTimeLabel = (mealTime: string) => {
     switch (mealTime) {
@@ -161,19 +167,34 @@ export default function FoodRecordDetailPage({
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>食事記録の詳細</CardTitle>
+    <div className="max-w-3xl mx-auto p-4">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-muted-foreground"
+          onClick={handleBack}
+        >
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          戻る
+        </Button>
+      </div>
+
+      <Card className="shadow-md">
+        <CardHeader className="bg-muted/50">
+          <CardTitle className="text-xl">食事記録の詳細</CardTitle>
           <CardDescription>
-            {resident.familyName} {resident.givenName}さんの
+            <span className="font-medium">
+              {resident.familyName} {resident.givenName}
+            </span>
+            さんの
             {getMealTimeLabel(foodRecord.mealTime)}の記録 -
             {format(new Date(foodRecord.recordedAt), "yyyy年MM月dd日 HH:mm", {
               locale: ja,
             })}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Form method="post" className="space-y-6">
             <input
               type="hidden"
@@ -183,7 +204,9 @@ export default function FoodRecordDetailPage({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="mealTime">食事の時間帯</Label>
+                <Label htmlFor="mealTime" className="text-base font-medium">
+                  食事の時間帯
+                </Label>
                 <Select
                   name="mealTime"
                   value={mealTime}
@@ -192,7 +215,7 @@ export default function FoodRecordDetailPage({
                   ) => setMealTime(value)}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="時間帯を選択" />
                   </SelectTrigger>
                   <SelectContent>
@@ -204,7 +227,9 @@ export default function FoodRecordDetailPage({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="beverageType">飲み物の種類</Label>
+                <Label htmlFor="beverageType" className="text-base font-medium">
+                  飲み物の種類
+                </Label>
                 <Select
                   name="beverageType"
                   value={beverageType}
@@ -213,7 +238,7 @@ export default function FoodRecordDetailPage({
                   ) => setBeverageType(value)}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="飲み物を選択" />
                   </SelectTrigger>
                   <SelectContent>
@@ -225,95 +250,116 @@ export default function FoodRecordDetailPage({
               </div>
             </div>
 
+            <Separator className="my-2" />
+
             <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="mainCoursePercentage">主食の摂取率</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {mainCoursePercentage}%
-                  </span>
+              <div>
+                <h3 className="text-base font-medium mb-4">摂取量</h3>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="mainCoursePercentage">主食の摂取率</Label>
+                      <span className="text-sm font-medium">
+                        {mainCoursePercentage}%
+                      </span>
+                    </div>
+                    <Slider
+                      id="mainCoursePercentage"
+                      name="mainCoursePercentage"
+                      value={[mainCoursePercentage]}
+                      onValueChange={(values: number[]) =>
+                        setMainCoursePercentage(values[0])
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="py-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="sideDishPercentage">副食の摂取率</Label>
+                      <span className="text-sm font-medium">
+                        {sideDishPercentage}%
+                      </span>
+                    </div>
+                    <Slider
+                      id="sideDishPercentage"
+                      name="sideDishPercentage"
+                      value={[sideDishPercentage]}
+                      onValueChange={(values: number[]) =>
+                        setSideDishPercentage(values[0])
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="py-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="soupPercentage">汁物の摂取率</Label>
+                      <span className="text-sm font-medium">
+                        {soupPercentage}%
+                      </span>
+                    </div>
+                    <Slider
+                      id="soupPercentage"
+                      name="soupPercentage"
+                      value={[soupPercentage]}
+                      onValueChange={(values: number[]) =>
+                        setSoupPercentage(values[0])
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="py-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="beverageVolume"
+                      className="text-base font-medium"
+                    >
+                      飲み物の摂取量 (ml)
+                    </Label>
+                    <Input
+                      id="beverageVolume"
+                      name="beverageVolume"
+                      type="number"
+                      min={0}
+                      value={beverageVolume}
+                      onChange={(e) =>
+                        setBeverageVolume(parseInt(e.target.value, 10))
+                      }
+                      required
+                      className="h-11"
+                    />
+                  </div>
                 </div>
-                <Slider
-                  id="mainCoursePercentage"
-                  name="mainCoursePercentage"
-                  value={[mainCoursePercentage]}
-                  onValueChange={(values: number[]) =>
-                    setMainCoursePercentage(values[0])
-                  }
-                  min={0}
-                  max={100}
-                  step={5}
-                />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="sideDishPercentage">副食の摂取率</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {sideDishPercentage}%
-                  </span>
-                </div>
-                <Slider
-                  id="sideDishPercentage"
-                  name="sideDishPercentage"
-                  value={[sideDishPercentage]}
-                  onValueChange={(values: number[]) =>
-                    setSideDishPercentage(values[0])
-                  }
-                  min={0}
-                  max={100}
-                  step={5}
-                />
-              </div>
+              <Separator className="my-2" />
 
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="soupPercentage">汁物の摂取率</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {soupPercentage}%
-                  </span>
-                </div>
-                <Slider
-                  id="soupPercentage"
-                  name="soupPercentage"
-                  value={[soupPercentage]}
-                  onValueChange={(values: number[]) =>
-                    setSoupPercentage(values[0])
-                  }
-                  min={0}
-                  max={100}
-                  step={5}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="beverageVolume">飲み物の摂取量 (ml)</Label>
-                <Input
-                  id="beverageVolume"
-                  name="beverageVolume"
-                  type="number"
-                  min={0}
-                  value={beverageVolume}
-                  onChange={(e) =>
-                    setBeverageVolume(parseInt(e.target.value, 10))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">メモ</Label>
+                <Label htmlFor="notes" className="text-base font-medium">
+                  メモ
+                </Label>
                 <Textarea
                   id="notes"
                   name="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
+                  className="min-h-[100px]"
                 />
               </div>
             </div>
 
-            <div className="flex justify-between">
+            <CardFooter className="flex justify-between px-0 pt-4">
               <Button
                 type="submit"
                 name="_action"
@@ -327,11 +373,16 @@ export default function FoodRecordDetailPage({
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   キャンセル
                 </Button>
-                <Button type="submit" name="_action" value="update">
+                <Button
+                  type="submit"
+                  name="_action"
+                  value="update"
+                  className="px-6"
+                >
                   保存
                 </Button>
               </div>
-            </div>
+            </CardFooter>
           </Form>
         </CardContent>
       </Card>

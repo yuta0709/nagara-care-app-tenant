@@ -58,6 +58,12 @@ export default function AuthenticatedLayout({
                   利用者
                 </Link>
                 <Link
+                  to="/food-records"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  食事記録
+                </Link>
+                <Link
                   to="/staff"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                 >

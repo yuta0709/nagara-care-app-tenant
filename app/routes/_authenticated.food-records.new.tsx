@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "~/components/ui/card";
 import {
   Select,
@@ -23,6 +24,8 @@ import {
   createFoodRecord,
   FoodRecordCreateInputDtoMealTime,
 } from "~/api/nagaraCareAPI";
+import { ChevronLeft } from "lucide-react";
+import { Separator } from "~/components/ui/separator";
 
 export async function clientLoader() {
   const me = await getMe();
@@ -84,31 +87,50 @@ export default function NewFoodRecordPage({
     navigate("/food-records");
   };
 
+  const handleBack = () => {
+    navigate("/food-records");
+  };
+
   const isFormValid = selectedResident && selectedMealTime;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>新規食事記録</CardTitle>
+    <div className="max-w-2xl mx-auto p-4">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center text-muted-foreground"
+          onClick={handleBack}
+        >
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          戻る
+        </Button>
+      </div>
+
+      <Card className="shadow-md">
+        <CardHeader className="bg-muted/50">
+          <CardTitle className="text-xl">新規食事記録</CardTitle>
           <CardDescription>
             利用者と食事の時間帯を選択してください
           </CardDescription>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="pt-6">
           <Form method="post" className="space-y-6">
             {date && <input type="hidden" name="date" value={date} />}
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="residentUid">利用者</Label>
+                <Label htmlFor="residentUid" className="text-base font-medium">
+                  利用者
+                </Label>
                 <Select
                   name="residentUid"
                   value={selectedResident}
                   onValueChange={setSelectedResident}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="利用者を選択" />
                   </SelectTrigger>
                   <SelectContent>
@@ -121,15 +143,19 @@ export default function NewFoodRecordPage({
                 </Select>
               </div>
 
+              <Separator className="my-2" />
+
               <div className="space-y-2">
-                <Label htmlFor="mealTime">食事の時間帯</Label>
+                <Label htmlFor="mealTime" className="text-base font-medium">
+                  食事の時間帯
+                </Label>
                 <Select
                   name="mealTime"
                   value={selectedMealTime}
                   onValueChange={setSelectedMealTime}
                   required
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder="時間帯を選択" />
                   </SelectTrigger>
                   <SelectContent>
@@ -141,14 +167,14 @@ export default function NewFoodRecordPage({
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
+            <CardFooter className="flex justify-end space-x-4 px-0 pt-4">
               <Button type="button" variant="outline" onClick={handleCancel}>
                 キャンセル
               </Button>
-              <Button type="submit" disabled={!isFormValid}>
+              <Button type="submit" disabled={!isFormValid} className="px-6">
                 作成
               </Button>
-            </div>
+            </CardFooter>
           </Form>
         </CardContent>
       </Card>
