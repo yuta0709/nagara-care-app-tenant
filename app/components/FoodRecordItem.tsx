@@ -56,7 +56,7 @@ export function FoodRecordItem({
   if (record) {
     return (
       <Link
-        to={`${linkPrefix}/${residentUid}/${record.uid}`}
+        to={`${linkPrefix}/${residentUid}/food-records/${record.uid}`}
         className="block p-3 -m-2 rounded-lg transition-all hover:bg-muted/50 border border-transparent hover:border-muted hover:shadow-sm"
       >
         <div className="space-y-3">

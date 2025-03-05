@@ -71,7 +71,7 @@ export default function FoodRecordsPage({ loaderData }: Route.ComponentProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" asChild>
-                        <Link to={`/food-records/residents/${resident.uid}`}>
+                        <Link to={`/residents/${resident.uid}/food-records`}>
                           詳細
                         </Link>
                       </Button>
