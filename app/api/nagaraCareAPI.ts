@@ -530,6 +530,13 @@ export interface BathRecordUpdateInputDto {
   bathMethod: string;
 }
 
+export interface BathRecordExtractedDto {
+  /** 入浴方法 */
+  bathMethod: string;
+  /** 特記事項 */
+  notes: string;
+}
+
 export interface EliminationRecordDto {
   /** UID */
   uid: string;
@@ -801,6 +808,28 @@ export interface BeverageRecordUpdateInputDto {
    * @minimum 0
    */
   volume: number;
+}
+
+/**
+ * 飲み物の種類
+ */
+export type BeverageRecordExtractedDtoBeverageType = typeof BeverageRecordExtractedDtoBeverageType[keyof typeof BeverageRecordExtractedDtoBeverageType];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BeverageRecordExtractedDtoBeverageType = {
+  WATER: 'WATER',
+  TEA: 'TEA',
+  OTHER: 'OTHER',
+} as const;
+
+export interface BeverageRecordExtractedDto {
+  /** 飲み物の種類 */
+  beverageType: BeverageRecordExtractedDtoBeverageType;
+  /** 飲み物の量（ml） */
+  volume: number;
+  /** 特記事項 */
+  notes: string;
 }
 
 /**
@@ -1122,6 +1151,51 @@ export interface SubjectUpdateInputDto {
   /** 性別 */
   gender: SubjectUpdateInputDtoGender;
 }
+
+export interface ThreadCreateOutputDto {
+  uid: string;
+  title: string;
+  createdByUid: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ThreadListItemOutputDto {
+  uid: string;
+  title: string;
+  createdByUid: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ThreadListOutputDto {
+  items: ThreadListItemOutputDto[];
+  total: number;
+}
+
+export interface MessageOutputDto {
+  uid: string;
+  threadUid: string;
+  content: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ThreadOutputDto {
+  uid: string;
+  title: string;
+  createdByUid: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: MessageOutputDto[];
+}
+
+export interface ThreadUpdateInputDto {
+  title: string;
+}
+
+export interface MessageCreateInputDto { [key: string]: unknown }
 
 export type GetDailyFoodRecordsParams = {
 /**
@@ -3716,7 +3790,7 @@ export const extractBathRecord = (
 ) => {
       
       
-      return customInstance<string>(
+      return customInstance<BathRecordExtractedDto>(
       {url: `/residents/${residentUid}/bath-records/${uid}/extract`, method: 'POST', signal
     },
       );
@@ -5649,7 +5723,7 @@ export const useDeleteBeverageRecordTranscription = <TError = unknown,
     }
     
 /**
- * @summary 飲料記録から情報を抽出
+ * @summary 飲み物摂取記録から情報を抽出
  */
 export const extractBeverageRecord = (
     residentUid: unknown,
@@ -5658,7 +5732,7 @@ export const extractBeverageRecord = (
 ) => {
       
       
-      return customInstance<string>(
+      return customInstance<BeverageRecordExtractedDto>(
       {url: `/residents/${residentUid}/beverage-records/${uid}/extract`, method: 'POST', signal
     },
       );
@@ -5696,7 +5770,7 @@ const {mutation: mutationOptions} = options ?
     export type ExtractBeverageRecordMutationError = unknown
 
     /**
- * @summary 飲料記録から情報を抽出
+ * @summary 飲み物摂取記録から情報を抽出
  */
 export const useExtractBeverageRecord = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractBeverageRecord>>, TError,{residentUid: unknown;uid: string}, TContext>, }
@@ -6797,6 +6871,438 @@ export const useDeleteSubject = <TError = unknown,
       > => {
 
       const mutationOptions = getDeleteSubjectMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 新しいスレッドを作成
+ */
+export const createThread = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ThreadCreateOutputDto>(
+      {url: `/chats`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getCreateThreadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createThread>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createThread>>, TError,void, TContext> => {
+    
+const mutationKey = ['createThread'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createThread>>, void> = () => {
+          
+
+          return  createThread()
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateThreadMutationResult = NonNullable<Awaited<ReturnType<typeof createThread>>>
+    
+    export type CreateThreadMutationError = unknown
+
+    /**
+ * @summary 新しいスレッドを作成
+ */
+export const useCreateThread = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createThread>>, TError,void, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof createThread>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getCreateThreadMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary スレッド一覧を取得
+ */
+export const getThreads = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ThreadListOutputDto>(
+      {url: `/chats`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetThreadsQueryKey = () => {
+    return [`/chats`] as const;
+    }
+
+    
+export const getGetThreadsQueryOptions = <TData = Awaited<ReturnType<typeof getThreads>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThreads>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetThreadsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getThreads>>> = ({ signal }) => getThreads(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getThreads>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetThreadsQueryResult = NonNullable<Awaited<ReturnType<typeof getThreads>>>
+export type GetThreadsQueryError = unknown
+
+
+export function useGetThreads<TData = Awaited<ReturnType<typeof getThreads>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThreads>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getThreads>>,
+          TError,
+          Awaited<ReturnType<typeof getThreads>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetThreads<TData = Awaited<ReturnType<typeof getThreads>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThreads>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getThreads>>,
+          TError,
+          Awaited<ReturnType<typeof getThreads>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetThreads<TData = Awaited<ReturnType<typeof getThreads>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThreads>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary スレッド一覧を取得
+ */
+
+export function useGetThreads<TData = Awaited<ReturnType<typeof getThreads>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThreads>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetThreadsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary 特定のスレッドを取得
+ */
+export const getThread = (
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ThreadOutputDto>(
+      {url: `/chats/${uid}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getGetThreadQueryKey = (uid: string,) => {
+    return [`/chats/${uid}`] as const;
+    }
+
+    
+export const getGetThreadQueryOptions = <TData = Awaited<ReturnType<typeof getThread>>, TError = unknown>(uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThread>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetThreadQueryKey(uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getThread>>> = ({ signal }) => getThread(uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getThread>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetThreadQueryResult = NonNullable<Awaited<ReturnType<typeof getThread>>>
+export type GetThreadQueryError = unknown
+
+
+export function useGetThread<TData = Awaited<ReturnType<typeof getThread>>, TError = unknown>(
+ uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThread>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getThread>>,
+          TError,
+          Awaited<ReturnType<typeof getThread>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetThread<TData = Awaited<ReturnType<typeof getThread>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThread>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getThread>>,
+          TError,
+          Awaited<ReturnType<typeof getThread>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetThread<TData = Awaited<ReturnType<typeof getThread>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThread>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 特定のスレッドを取得
+ */
+
+export function useGetThread<TData = Awaited<ReturnType<typeof getThread>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getThread>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetThreadQueryOptions(uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary スレッドを更新
+ */
+export const updateThread = (
+    uid: string,
+    threadUpdateInputDto: ThreadUpdateInputDto,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/chats/${uid}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: threadUpdateInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateThreadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateThread>>, TError,{uid: string;data: ThreadUpdateInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateThread>>, TError,{uid: string;data: ThreadUpdateInputDto}, TContext> => {
+    
+const mutationKey = ['updateThread'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateThread>>, {uid: string;data: ThreadUpdateInputDto}> = (props) => {
+          const {uid,data} = props ?? {};
+
+          return  updateThread(uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateThreadMutationResult = NonNullable<Awaited<ReturnType<typeof updateThread>>>
+    export type UpdateThreadMutationBody = ThreadUpdateInputDto
+    export type UpdateThreadMutationError = unknown
+
+    /**
+ * @summary スレッドを更新
+ */
+export const useUpdateThread = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateThread>>, TError,{uid: string;data: ThreadUpdateInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateThread>>,
+        TError,
+        {uid: string;data: ThreadUpdateInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateThreadMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary スレッドを削除
+ */
+export const deleteThread = (
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/chats/${uid}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteThreadMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteThread>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteThread>>, TError,{uid: string}, TContext> => {
+    
+const mutationKey = ['deleteThread'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteThread>>, {uid: string}> = (props) => {
+          const {uid} = props ?? {};
+
+          return  deleteThread(uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteThreadMutationResult = NonNullable<Awaited<ReturnType<typeof deleteThread>>>
+    
+    export type DeleteThreadMutationError = unknown
+
+    /**
+ * @summary スレッドを削除
+ */
+export const useDeleteThread = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteThread>>, TError,{uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteThread>>,
+        TError,
+        {uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteThreadMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary メッセージを作成
+ */
+export const createMessage = (
+    uid: string,
+    messageCreateInputDto: MessageCreateInputDto,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/chats/${uid}/messages`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: messageCreateInputDto, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateMessageMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMessage>>, TError,{uid: string;data: MessageCreateInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createMessage>>, TError,{uid: string;data: MessageCreateInputDto}, TContext> => {
+    
+const mutationKey = ['createMessage'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMessage>>, {uid: string;data: MessageCreateInputDto}> = (props) => {
+          const {uid,data} = props ?? {};
+
+          return  createMessage(uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateMessageMutationResult = NonNullable<Awaited<ReturnType<typeof createMessage>>>
+    export type CreateMessageMutationBody = MessageCreateInputDto
+    export type CreateMessageMutationError = unknown
+
+    /**
+ * @summary メッセージを作成
+ */
+export const useCreateMessage = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMessage>>, TError,{uid: string;data: MessageCreateInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof createMessage>>,
+        TError,
+        {uid: string;data: MessageCreateInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateMessageMutationOptions(options);
 
       return useMutation(mutationOptions);
     }

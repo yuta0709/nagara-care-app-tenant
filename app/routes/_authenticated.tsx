@@ -82,6 +82,12 @@ export default function AuthenticatedLayout({
                   入浴記録
                 </Link>
                 <Link
+                  to="/chats"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  チャット
+                </Link>
+                <Link
                   to="/staff"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                 >
