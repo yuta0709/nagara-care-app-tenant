@@ -1,7 +1,14 @@
-import { useState, useEffect } from "react";
-import { Form, redirect, useActionData, useNavigate } from "react-router";
+import { useState, useEffect, useRef } from "react";
+import {
+  Form,
+  redirect,
+  useActionData,
+  useNavigate,
+  useParams,
+} from "react-router";
 import type { Route } from "./+types/_authenticated.residents.$uid.food-records.$foodRecordId";
 import { Button } from "~/components/ui/button";
+import "regenerator-runtime/runtime.js";
 import {
   Card,
   CardContent,
@@ -34,6 +41,9 @@ import {
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { ChevronLeft } from "lucide-react";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const { uid, foodRecordId } = params;
@@ -100,6 +110,7 @@ export default function FoodRecordPage({ loaderData }: Route.ComponentProps) {
   const { foodRecord, transcription } = loaderData;
   const actionData = useActionData<{ extracted: FoodRecordExtractedDto }>();
   const navigate = useNavigate();
+  const params = useParams();
   const [transcriptionText, setTranscriptionText] = useState(
     transcription.transcription
   );
@@ -120,9 +131,149 @@ export default function FoodRecordPage({ loaderData }: Route.ComponentProps) {
   );
   const [notes, setNotes] = useState(foodRecord.notes);
 
+  // extract処理の状態管理
+  const [isExtracting, setIsExtracting] = useState(false);
+  const extractIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const prevTranscriptRef = useRef<string>("");
+
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
+
+  // 音声認識の開始
+  const startListening = () => {
+    if (browserSupportsSpeechRecognition) {
+      resetTranscript();
+      SpeechRecognition.startListening({ continuous: true, language: "ja-JP" });
+
+      // 録音開始時に定期的なextract処理を開始
+      startPeriodicExtract();
+    }
+  };
+
+  // 音声認識の停止
+  const stopListening = () => {
+    SpeechRecognition.stopListening();
+
+    // 録音停止時に定期的なextract処理も停止
+    stopPeriodicExtract();
+  };
+
+  // 定期的なextract処理を開始
+  const startPeriodicExtract = () => {
+    // 既存のインターバルがあれば停止
+    stopPeriodicExtract();
+
+    // バックアップとして30秒ごとにextract処理を実行
+    extractIntervalRef.current = setInterval(() => {
+      if (!isExtracting && transcriptionText.trim().length > 0) {
+        extractTranscription();
+      }
+    }, 30000); // 30秒間隔（バックアップとして）
+  };
+
+  // 定期的なextract処理を停止
+  const stopPeriodicExtract = () => {
+    if (extractIntervalRef.current) {
+      clearInterval(extractIntervalRef.current);
+      extractIntervalRef.current = null;
+    }
+  };
+
+  // transcriptが更新されたら、transcriptionTextに反映し、必要に応じてextract実行
+  useEffect(() => {
+    if (transcript) {
+      console.log("Transcript updated:", transcript);
+      console.log("Previous transcript:", prevTranscriptRef.current);
+      console.log("isExtracting:", isExtracting);
+
+      setTranscriptionText(transcript);
+
+      // 前回のtranscriptと比較して変化があり、かつextract処理中でなければ実行
+      // 条件を緩和：単に前回と違う、かつ処理中でなければ実行
+      if (
+        transcript !== prevTranscriptRef.current &&
+        !isExtracting &&
+        transcript.trim().length > 0
+      ) {
+        console.log("Transcript changed, scheduling extraction");
+
+        // 少し遅延を入れて、連続した音声入力による頻繁な実行を防止
+        const timer = setTimeout(() => {
+          console.log("Executing extraction");
+          extractTranscription();
+        }, 1500); // 1.5秒の遅延
+
+        // 現在のtranscriptを保存（タイマーの前に保存して、次の変更との比較に備える）
+        prevTranscriptRef.current = transcript;
+
+        return () => {
+          console.log("Clearing extraction timeout");
+          clearTimeout(timer);
+        };
+      }
+
+      // 現在のtranscriptを保存（条件を満たさない場合でも保存）
+      prevTranscriptRef.current = transcript;
+    }
+  }, [transcript, isExtracting]);
+
+  // extract処理を実行
+  const extractTranscription = async () => {
+    if (isExtracting) {
+      console.log("Already extracting, skipping");
+      return; // 既に処理中なら何もしない
+    }
+
+    console.log("Starting extraction process");
+    setIsExtracting(true);
+
+    try {
+      // 現在の文字起こしを保存してから解析
+      console.log("Saving transcription:", transcriptionText);
+      await updateTranscription();
+
+      // extract処理を実行
+      if (formRef.current) {
+        console.log("Submitting extract form");
+
+        // フォームを手動でサブミット
+        formRef.current.requestSubmit();
+      } else {
+        console.log("Form reference not found");
+        setIsExtracting(false); // formがなければフラグをリセット
+      }
+    } catch (error) {
+      console.error("Extract処理中にエラーが発生しました:", error);
+      setIsExtracting(false); // エラー時はフラグをリセット
+    }
+  };
+
+  // 文字起こしを保存
+  const updateTranscription = async () => {
+    const { uid } = foodRecord;
+    const { foodRecordId } = params;
+
+    if (!foodRecordId) {
+      console.error("foodRecordIdが見つかりません");
+      return;
+    }
+
+    await updateFoodRecordTranscription(uid, foodRecordId, {
+      transcription: transcriptionText,
+    });
+  };
+
   // 解析結果が返ってきたら、nullでない項目をフォームに反映
   useEffect(() => {
+    console.log("Action data updated:", actionData);
+
     if (actionData?.extracted) {
+      console.log("Extracted data received:", actionData.extracted);
       const { extracted } = actionData;
       if (extracted.mainCoursePercentage !== null) {
         setMainCoursePercentage(extracted.mainCoursePercentage);
@@ -144,8 +295,27 @@ export default function FoodRecordPage({ loaderData }: Route.ComponentProps) {
       if (extracted.notes !== null) {
         setNotes(extracted.notes);
       }
+
+      // extract処理が完了したらフラグをリセット
+      console.log("Resetting isExtracting flag");
+      setIsExtracting(false);
     }
   }, [actionData]);
+
+  // コンポーネントのアンマウント時にインターバルをクリア
+  useEffect(() => {
+    // コンポーネントのマウント時に実行
+    console.log("Component mounted, initializing state");
+
+    // 初期状態の設定
+    prevTranscriptRef.current = transcriptionText || "";
+    setIsExtracting(false);
+
+    return () => {
+      console.log("Component unmounting, cleaning up");
+      stopPeriodicExtract();
+    };
+  }, []);
 
   const handleBack = () => {
     navigate(`/residents/${foodRecord.residentUid}/food-records`);
@@ -360,14 +530,34 @@ export default function FoodRecordPage({ loaderData }: Route.ComponentProps) {
             <CardHeader className="bg-muted/50 flex flex-row items-center justify-between">
               <CardTitle className="text-xl">文字起こし</CardTitle>
               <div className="flex items-center space-x-2">
-                <Form method="post">
+                <Button
+                  type="button"
+                  variant={listening ? "destructive" : "outline"}
+                  onClick={listening ? stopListening : startListening}
+                  disabled={!browserSupportsSpeechRecognition}
+                  className="mr-2"
+                >
+                  {listening ? (
+                    <>
+                      <span className="mr-2">●</span>
+                      録音停止
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">◉</span>
+                      録音開始
+                    </>
+                  )}
+                </Button>
+                <Form method="post" ref={formRef}>
                   <input type="hidden" name="intent" value="extract" />
                   <Button
                     type="submit"
                     variant="default"
                     className="bg-black hover:bg-black/90"
+                    disabled={isExtracting}
                   >
-                    文字起こしを解析
+                    {isExtracting ? "解析中..." : "文字起こしを解析"}
                   </Button>
                 </Form>
               </div>
