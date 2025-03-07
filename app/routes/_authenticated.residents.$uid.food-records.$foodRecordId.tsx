@@ -21,6 +21,7 @@ import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Slider } from "~/components/ui/slider";
 import {
   getFoodRecords,
   updateFoodRecord,
@@ -195,65 +196,90 @@ export default function FoodRecordPage({ loaderData }: Route.ComponentProps) {
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="mainCoursePercentage"
-                      className="text-base font-medium"
-                    >
-                      主食の摂取量 (%)
-                    </Label>
-                    <Input
-                      type="number"
+                    <div className="flex justify-between items-center">
+                      <Label
+                        htmlFor="mainCoursePercentage"
+                        className="text-base font-medium"
+                      >
+                        主食の摂取量
+                      </Label>
+                      <span className="text-sm font-medium">
+                        {mainCoursePercentage}%
+                      </span>
+                    </div>
+                    <Slider
                       id="mainCoursePercentage"
+                      value={[mainCoursePercentage]}
+                      onValueChange={(values) =>
+                        setMainCoursePercentage(values[0])
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="py-4"
+                    />
+                    <input
+                      type="hidden"
                       name="mainCoursePercentage"
                       value={mainCoursePercentage}
-                      onChange={(e) =>
-                        setMainCoursePercentage(Number(e.target.value))
-                      }
-                      min={0}
-                      max={100}
-                      className="h-11"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="sideDishPercentage"
-                      className="text-base font-medium"
-                    >
-                      副食の摂取量 (%)
-                    </Label>
-                    <Input
-                      type="number"
+                    <div className="flex justify-between items-center">
+                      <Label
+                        htmlFor="sideDishPercentage"
+                        className="text-base font-medium"
+                      >
+                        副食の摂取量
+                      </Label>
+                      <span className="text-sm font-medium">
+                        {sideDishPercentage}%
+                      </span>
+                    </div>
+                    <Slider
                       id="sideDishPercentage"
+                      value={[sideDishPercentage]}
+                      onValueChange={(values) =>
+                        setSideDishPercentage(values[0])
+                      }
+                      min={0}
+                      max={100}
+                      step={5}
+                      className="py-4"
+                    />
+                    <input
+                      type="hidden"
                       name="sideDishPercentage"
                       value={sideDishPercentage}
-                      onChange={(e) =>
-                        setSideDishPercentage(Number(e.target.value))
-                      }
-                      min={0}
-                      max={100}
-                      className="h-11"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="soupPercentage"
-                      className="text-base font-medium"
-                    >
-                      汁物の摂取量 (%)
-                    </Label>
-                    <Input
-                      type="number"
+                    <div className="flex justify-between items-center">
+                      <Label
+                        htmlFor="soupPercentage"
+                        className="text-base font-medium"
+                      >
+                        汁物の摂取量
+                      </Label>
+                      <span className="text-sm font-medium">
+                        {soupPercentage}%
+                      </span>
+                    </div>
+                    <Slider
                       id="soupPercentage"
-                      name="soupPercentage"
-                      value={soupPercentage}
-                      onChange={(e) =>
-                        setSoupPercentage(Number(e.target.value))
-                      }
+                      value={[soupPercentage]}
+                      onValueChange={(values) => setSoupPercentage(values[0])}
                       min={0}
                       max={100}
-                      className="h-11"
+                      step={5}
+                      className="py-4"
+                    />
+                    <input
+                      type="hidden"
+                      name="soupPercentage"
+                      value={soupPercentage}
                     />
                   </div>
 

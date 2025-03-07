@@ -65,7 +65,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     notes: "",
   });
 
-  return redirect(`/food-records/residents/${residentUid}/${foodRecord.uid}`);
+  return redirect(`/residents/${residentUid}/food-records/${foodRecord.uid}`);
 }
 
 export default function NewFoodRecordPage({
