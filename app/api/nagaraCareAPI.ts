@@ -470,7 +470,6 @@ export interface TranscriptionDto {
 }
 
 export interface TranscriptionInputDto {
-  /** 文字起こしテキスト */
   transcription: string;
 }
 
@@ -1196,6 +1195,84 @@ export interface ThreadUpdateInputDto {
 }
 
 export interface MessageCreateInputDto { [key: string]: unknown }
+
+export interface CreateQaSessionDto {
+  /** タイトル */
+  title: string;
+}
+
+export interface QuestionAnswerOutputDto {
+  /** 質問回答UID */
+  uid: string;
+  /** 質問 */
+  question: string;
+  /** 回答 */
+  answer: string;
+  /** 作成日時 */
+  createdAt: string;
+  /** 更新日時 */
+  updatedAt: string;
+}
+
+export interface QaSessionOutputDto {
+  /** QAセッションUID */
+  uid: string;
+  /** ユーザーUID */
+  userUid: string;
+  /** 質問回答 */
+  questionAnswers: QuestionAnswerOutputDto[];
+  /** 作成日時 */
+  createdAt: string;
+  /** 更新日時 */
+  updatedAt: string;
+  /** 文字起こし */
+  transcription: string;
+}
+
+export interface QaSessionListOutputDto {
+  items: QaSessionOutputDto[];
+  /** 総数 */
+  total: number;
+}
+
+export interface CreateQuestionAnswerDto {
+  /** QAセッションID */
+  qaSessionUid: string;
+  /** 質問内容 */
+  question: string;
+  /** 回答内容 */
+  answer: string;
+}
+
+export interface UpdateQuestionAnswerDto {
+  /** 質問回答ID */
+  uid: string;
+  /** 質問内容 */
+  question: string;
+  /** 回答内容 */
+  answer: string;
+}
+
+export interface QuestionAnswerItem {
+  /** 質問内容 */
+  question: string;
+  /** 回答内容 */
+  answer: string;
+}
+
+export interface UpsertQuestionAnswersDto {
+  /** 質問と回答のリスト */
+  questionAnswers: QuestionAnswerItem[];
+}
+
+export interface ExtractedQaPair {
+  question: string;
+  answer: string;
+}
+
+export interface ExtractQaPairsOutputDto {
+  data: ExtractedQaPair[];
+}
 
 export type GetDailyFoodRecordsParams = {
 /**
@@ -6308,7 +6385,7 @@ export const useAppendTranscription = <TError = unknown,
     }
     
 /**
- * @summary アセスメントの文字起こしを置換
+ * @summary QAセッションの音声ファイルの文字起こしを更新する
  */
 export const updateTranscription = (
     uid: string,
@@ -6316,8 +6393,8 @@ export const updateTranscription = (
  ) => {
       
       
-      return customInstance<TranscriptionDto>(
-      {url: `/assessments/${uid}/transcription`, method: 'PUT',
+      return customInstance<void>(
+      {url: `/qa/sessions/${uid}/transcription`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: transcriptionInputDto
     },
@@ -6326,7 +6403,7 @@ export const updateTranscription = (
   
 
 
-export const getUpdateTranscriptionMutationOptions = <TError = unknown,
+export const getUpdateTranscriptionMutationOptions = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
 ): UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext> => {
     
@@ -6353,12 +6430,12 @@ const {mutation: mutationOptions} = options ?
 
     export type UpdateTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateTranscription>>>
     export type UpdateTranscriptionMutationBody = TranscriptionInputDto
-    export type UpdateTranscriptionMutationError = unknown
+    export type UpdateTranscriptionMutationError = void
 
     /**
- * @summary アセスメントの文字起こしを置換
+ * @summary QAセッションの音声ファイルの文字起こしを更新する
  */
-export const useUpdateTranscription = <TError = unknown,
+export const useUpdateTranscription = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
 ): UseMutationResult<
         Awaited<ReturnType<typeof updateTranscription>>,
@@ -7307,3 +7384,652 @@ export const useCreateMessage = <TError = unknown,
       return useMutation(mutationOptions);
     }
     
+/**
+ * @summary QAセッションを作成する
+ */
+export const createQaSession = (
+    createQaSessionDto: CreateQaSessionDto,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<QaSessionOutputDto>(
+      {url: `/qa/sessions`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createQaSessionDto, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateQaSessionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createQaSession>>, TError,{data: CreateQaSessionDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createQaSession>>, TError,{data: CreateQaSessionDto}, TContext> => {
+    
+const mutationKey = ['createQaSession'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createQaSession>>, {data: CreateQaSessionDto}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createQaSession(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateQaSessionMutationResult = NonNullable<Awaited<ReturnType<typeof createQaSession>>>
+    export type CreateQaSessionMutationBody = CreateQaSessionDto
+    export type CreateQaSessionMutationError = unknown
+
+    /**
+ * @summary QAセッションを作成する
+ */
+export const useCreateQaSession = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createQaSession>>, TError,{data: CreateQaSessionDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof createQaSession>>,
+        TError,
+        {data: CreateQaSessionDto},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateQaSessionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary ユーザーに紐づくQAセッション一覧を取得する
+ */
+export const findQaSessionsByUser = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<QaSessionListOutputDto>(
+      {url: `/qa/sessions`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getFindQaSessionsByUserQueryKey = () => {
+    return [`/qa/sessions`] as const;
+    }
+
+    
+export const getFindQaSessionsByUserQueryOptions = <TData = Awaited<ReturnType<typeof findQaSessionsByUser>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSessionsByUser>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFindQaSessionsByUserQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof findQaSessionsByUser>>> = ({ signal }) => findQaSessionsByUser(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof findQaSessionsByUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type FindQaSessionsByUserQueryResult = NonNullable<Awaited<ReturnType<typeof findQaSessionsByUser>>>
+export type FindQaSessionsByUserQueryError = unknown
+
+
+export function useFindQaSessionsByUser<TData = Awaited<ReturnType<typeof findQaSessionsByUser>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSessionsByUser>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof findQaSessionsByUser>>,
+          TError,
+          Awaited<ReturnType<typeof findQaSessionsByUser>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFindQaSessionsByUser<TData = Awaited<ReturnType<typeof findQaSessionsByUser>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSessionsByUser>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof findQaSessionsByUser>>,
+          TError,
+          Awaited<ReturnType<typeof findQaSessionsByUser>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFindQaSessionsByUser<TData = Awaited<ReturnType<typeof findQaSessionsByUser>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSessionsByUser>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary ユーザーに紐づくQAセッション一覧を取得する
+ */
+
+export function useFindQaSessionsByUser<TData = Awaited<ReturnType<typeof findQaSessionsByUser>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSessionsByUser>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getFindQaSessionsByUserQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary QAセッションを取得する
+ */
+export const findQaSession = (
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<QaSessionOutputDto>(
+      {url: `/qa/sessions/${uid}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getFindQaSessionQueryKey = (uid: string,) => {
+    return [`/qa/sessions/${uid}`] as const;
+    }
+
+    
+export const getFindQaSessionQueryOptions = <TData = Awaited<ReturnType<typeof findQaSession>>, TError = void>(uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSession>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFindQaSessionQueryKey(uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof findQaSession>>> = ({ signal }) => findQaSession(uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof findQaSession>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type FindQaSessionQueryResult = NonNullable<Awaited<ReturnType<typeof findQaSession>>>
+export type FindQaSessionQueryError = void
+
+
+export function useFindQaSession<TData = Awaited<ReturnType<typeof findQaSession>>, TError = void>(
+ uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSession>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof findQaSession>>,
+          TError,
+          Awaited<ReturnType<typeof findQaSession>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFindQaSession<TData = Awaited<ReturnType<typeof findQaSession>>, TError = void>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSession>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof findQaSession>>,
+          TError,
+          Awaited<ReturnType<typeof findQaSession>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useFindQaSession<TData = Awaited<ReturnType<typeof findQaSession>>, TError = void>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSession>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary QAセッションを取得する
+ */
+
+export function useFindQaSession<TData = Awaited<ReturnType<typeof findQaSession>>, TError = void>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof findQaSession>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getFindQaSessionQueryOptions(uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary QAセッションを削除する
+ */
+export const deleteQaSession = (
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/qa/sessions/${uid}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteQaSessionMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteQaSession>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteQaSession>>, TError,{uid: string}, TContext> => {
+    
+const mutationKey = ['deleteQaSession'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteQaSession>>, {uid: string}> = (props) => {
+          const {uid} = props ?? {};
+
+          return  deleteQaSession(uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteQaSessionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteQaSession>>>
+    
+    export type DeleteQaSessionMutationError = void
+
+    /**
+ * @summary QAセッションを削除する
+ */
+export const useDeleteQaSession = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteQaSession>>, TError,{uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteQaSession>>,
+        TError,
+        {uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteQaSessionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary QAセッションに質問回答を追加する
+ */
+export const addQuestionAnswer = (
+    createQuestionAnswerDto: CreateQuestionAnswerDto,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<QuestionAnswerOutputDto>(
+      {url: `/qa/question-answers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createQuestionAnswerDto, signal
+    },
+      );
+    }
+  
+
+
+export const getAddQuestionAnswerMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addQuestionAnswer>>, TError,{data: CreateQuestionAnswerDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof addQuestionAnswer>>, TError,{data: CreateQuestionAnswerDto}, TContext> => {
+    
+const mutationKey = ['addQuestionAnswer'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addQuestionAnswer>>, {data: CreateQuestionAnswerDto}> = (props) => {
+          const {data} = props ?? {};
+
+          return  addQuestionAnswer(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddQuestionAnswerMutationResult = NonNullable<Awaited<ReturnType<typeof addQuestionAnswer>>>
+    export type AddQuestionAnswerMutationBody = CreateQuestionAnswerDto
+    export type AddQuestionAnswerMutationError = unknown
+
+    /**
+ * @summary QAセッションに質問回答を追加する
+ */
+export const useAddQuestionAnswer = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addQuestionAnswer>>, TError,{data: CreateQuestionAnswerDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof addQuestionAnswer>>,
+        TError,
+        {data: CreateQuestionAnswerDto},
+        TContext
+      > => {
+
+      const mutationOptions = getAddQuestionAnswerMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 質問回答を更新する
+ */
+export const updateQuestionAnswer = (
+    uid: string,
+    updateQuestionAnswerDto: UpdateQuestionAnswerDto,
+ ) => {
+      
+      
+      return customInstance<QuestionAnswerOutputDto>(
+      {url: `/qa/question-answers/${uid}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateQuestionAnswerDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateQuestionAnswerMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateQuestionAnswer>>, TError,{uid: string;data: UpdateQuestionAnswerDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateQuestionAnswer>>, TError,{uid: string;data: UpdateQuestionAnswerDto}, TContext> => {
+    
+const mutationKey = ['updateQuestionAnswer'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateQuestionAnswer>>, {uid: string;data: UpdateQuestionAnswerDto}> = (props) => {
+          const {uid,data} = props ?? {};
+
+          return  updateQuestionAnswer(uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateQuestionAnswerMutationResult = NonNullable<Awaited<ReturnType<typeof updateQuestionAnswer>>>
+    export type UpdateQuestionAnswerMutationBody = UpdateQuestionAnswerDto
+    export type UpdateQuestionAnswerMutationError = void
+
+    /**
+ * @summary 質問回答を更新する
+ */
+export const useUpdateQuestionAnswer = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateQuestionAnswer>>, TError,{uid: string;data: UpdateQuestionAnswerDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateQuestionAnswer>>,
+        TError,
+        {uid: string;data: UpdateQuestionAnswerDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateQuestionAnswerMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 質問回答を削除する
+ */
+export const deleteQuestionAnswer = (
+    uid: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/qa/question-answers/${uid}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteQuestionAnswerMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteQuestionAnswer>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteQuestionAnswer>>, TError,{uid: string}, TContext> => {
+    
+const mutationKey = ['deleteQuestionAnswer'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteQuestionAnswer>>, {uid: string}> = (props) => {
+          const {uid} = props ?? {};
+
+          return  deleteQuestionAnswer(uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteQuestionAnswerMutationResult = NonNullable<Awaited<ReturnType<typeof deleteQuestionAnswer>>>
+    
+    export type DeleteQuestionAnswerMutationError = void
+
+    /**
+ * @summary 質問回答を削除する
+ */
+export const useDeleteQuestionAnswer = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteQuestionAnswer>>, TError,{uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof deleteQuestionAnswer>>,
+        TError,
+        {uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteQuestionAnswerMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary QAセッションに紐づく質問回答を一括更新（置き換え）する
+ */
+export const upsertQuestionAnswers = (
+    uid: string,
+    upsertQuestionAnswersDto: UpsertQuestionAnswersDto,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<QaSessionOutputDto>(
+      {url: `/qa/sessions/${uid}/upsert-question-answers`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: upsertQuestionAnswersDto, signal
+    },
+      );
+    }
+  
+
+
+export const getUpsertQuestionAnswersMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertQuestionAnswers>>, TError,{uid: string;data: UpsertQuestionAnswersDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof upsertQuestionAnswers>>, TError,{uid: string;data: UpsertQuestionAnswersDto}, TContext> => {
+    
+const mutationKey = ['upsertQuestionAnswers'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertQuestionAnswers>>, {uid: string;data: UpsertQuestionAnswersDto}> = (props) => {
+          const {uid,data} = props ?? {};
+
+          return  upsertQuestionAnswers(uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertQuestionAnswersMutationResult = NonNullable<Awaited<ReturnType<typeof upsertQuestionAnswers>>>
+    export type UpsertQuestionAnswersMutationBody = UpsertQuestionAnswersDto
+    export type UpsertQuestionAnswersMutationError = void
+
+    /**
+ * @summary QAセッションに紐づく質問回答を一括更新（置き換え）する
+ */
+export const useUpsertQuestionAnswers = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertQuestionAnswers>>, TError,{uid: string;data: UpsertQuestionAnswersDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof upsertQuestionAnswers>>,
+        TError,
+        {uid: string;data: UpsertQuestionAnswersDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpsertQuestionAnswersMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 文字起こしから質問と回答のペアを抽出する
+ */
+export const extractQaPairsFromTranscription = (
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ExtractQaPairsOutputDto>(
+      {url: `/qa/sessions/${uid}/extract`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getExtractQaPairsFromTranscriptionQueryKey = (uid: string,) => {
+    return [`/qa/sessions/${uid}/extract`] as const;
+    }
+
+    
+export const getExtractQaPairsFromTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError = unknown>(uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExtractQaPairsFromTranscriptionQueryKey(uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>> = ({ signal }) => extractQaPairsFromTranscription(uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ExtractQaPairsFromTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>>
+export type ExtractQaPairsFromTranscriptionQueryError = unknown
+
+
+export function useExtractQaPairsFromTranscription<TData = Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError = unknown>(
+ uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof extractQaPairsFromTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof extractQaPairsFromTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useExtractQaPairsFromTranscription<TData = Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof extractQaPairsFromTranscription>>,
+          TError,
+          Awaited<ReturnType<typeof extractQaPairsFromTranscription>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useExtractQaPairsFromTranscription<TData = Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 文字起こしから質問と回答のペアを抽出する
+ */
+
+export function useExtractQaPairsFromTranscription<TData = Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractQaPairsFromTranscription>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getExtractQaPairsFromTranscriptionQueryOptions(uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

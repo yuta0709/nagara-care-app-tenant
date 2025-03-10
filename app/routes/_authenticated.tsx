@@ -88,6 +88,12 @@ export default function AuthenticatedLayout({
                   チャット
                 </Link>
                 <Link
+                  to="/qa-sessions"
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                >
+                  質疑応答
+                </Link>
+                <Link
                   to="/staff"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
                 >
