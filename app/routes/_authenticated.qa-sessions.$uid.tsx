@@ -1,4 +1,5 @@
-import { useState } from "react";
+import "regenerator-runtime/runtime";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -30,6 +31,11 @@ import type { Route } from "./+types/_authenticated.qa-sessions.$uid";
 import { Switch } from "~/components/ui/switch";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
+import { Mic, MicOff } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 
 export async function clientLoader({ params }: Route.LoaderArgs) {
   const { uid } = params;
@@ -54,6 +60,85 @@ export default function QaSessionDetailPage({
   const [extractedQaPairs, setExtractedQaPairs] = useState<ExtractedQaPair[]>(
     []
   );
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [initialTranscript, setInitialTranscript] = useState("");
+  // 前回の処理時刻を保持するref
+  const lastProcessTimeRef = useRef<number>(0);
+  // 処理中フラグのref
+  const isCurrentlyProcessingRef = useRef<boolean>(false);
+  // デバウンスタイマーref
+  const debounceTimerRef = useRef<number | null>(null);
+
+  const {
+    transcript: recordedTranscript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition({ transcribing: true });
+
+  // 文字起こしの保存と質問抽出を行う関数
+  const processTranscription = async (currentTranscript: string) => {
+    // 既に処理中の場合は何もしない
+    if (isCurrentlyProcessingRef.current) return;
+
+    // 現在の処理時刻を記録
+    const currentTime = Date.now();
+    // 前回の処理から2秒以内の場合は処理しない（デバウンス）
+    if (currentTime - lastProcessTimeRef.current < 2000) return;
+
+    // 処理中フラグを立てる
+    isCurrentlyProcessingRef.current = true;
+    setIsProcessing(true);
+
+    try {
+      // 文字起こしをバックエンドに保存
+      await updateTranscription(qaSession.uid, {
+        transcription: currentTranscript,
+      });
+
+      // 質問回答ペアを抽出
+      const result = await extractQaPairsFromTranscription(qaSession.uid);
+      setExtractedQaPairs(result.data);
+
+      // 処理時刻を更新
+      lastProcessTimeRef.current = Date.now();
+    } catch (error) {
+      console.error("文字起こしの処理中にエラーが発生しました", error);
+    } finally {
+      // 処理中フラグを下ろす
+      isCurrentlyProcessingRef.current = false;
+      setIsProcessing(false);
+    }
+  };
+
+  // 録音内容が更新されたら処理を実行
+  useEffect(() => {
+    // 録音中のみ実行
+    if (isRecording && recordedTranscript) {
+      const currentFullTranscript =
+        initialTranscript + " " + recordedTranscript;
+      // 録音中はリアルタイムで文字起こしを表示
+      setTranscript(currentFullTranscript);
+
+      // 前回のタイマーをクリア
+      if (debounceTimerRef.current) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+
+      // 2秒後に処理を実行（デバウンス処理）
+      debounceTimerRef.current = window.setTimeout(() => {
+        processTranscription(currentFullTranscript);
+      }, 2000);
+    }
+
+    // コンポーネントのアンマウント時にタイマーをクリア
+    return () => {
+      if (debounceTimerRef.current) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [recordedTranscript, isRecording, initialTranscript]);
 
   const handleSaveQaPairs = async () => {
     await upsertQuestionAnswers(qaSession.uid, {
@@ -104,6 +189,37 @@ export default function QaSessionDetailPage({
     }
   };
 
+  const toggleRecording = () => {
+    if (!browserSupportsSpeechRecognition) {
+      return;
+    }
+
+    if (listening) {
+      SpeechRecognition.stopListening();
+      setIsRecording(false);
+
+      // 録音停止時の処理
+      if (recordedTranscript) {
+        // 初期状態と現在の文字起こしを組み合わせて最終的な文字起こしを作成
+        const finalTranscript = initialTranscript + " " + recordedTranscript;
+        setTranscript(finalTranscript);
+
+        // 録音停止時も処理を実行（デバウンス処理と重複しないように確認）
+        if (!isCurrentlyProcessingRef.current) {
+          processTranscription(finalTranscript);
+        }
+      }
+    } else {
+      // 録音開始時に現在の文字起こしを初期状態として保持
+      setInitialTranscript(transcript);
+      resetTranscript();
+      SpeechRecognition.startListening({ continuous: true, language: "ja-JP" });
+      setIsRecording(true);
+      // 録音開始時に編集モードを有効にする
+      setIsEditMode(true);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -132,6 +248,25 @@ export default function QaSessionDetailPage({
               onCheckedChange={handleEditModeChange}
             />
             <Label htmlFor="edit-mode">編集モード</Label>
+
+            <Button
+              variant={listening ? "destructive" : "default"}
+              size="sm"
+              onClick={toggleRecording}
+              className="ml-4"
+            >
+              {listening ? (
+                <>
+                  <MicOff className="mr-2 h-4 w-4" />
+                  録音停止
+                </>
+              ) : (
+                <>
+                  <Mic className="mr-2 h-4 w-4" />
+                  録音開始
+                </>
+              )}
+            </Button>
           </div>
 
           <ResizablePanelGroup
@@ -184,7 +319,7 @@ export default function QaSessionDetailPage({
                       </Button>
                       <Button
                         onClick={handleExtractQaPairs}
-                        disabled={isExtracting || !transcript.trim()}
+                        disabled={isExtracting || !transcript?.trim()}
                         size="sm"
                       >
                         {isExtracting ? "抽出中..." : "文字起こしから抽出"}
