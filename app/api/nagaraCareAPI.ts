@@ -717,6 +717,11 @@ export interface DailyRecordUpdateInputDto {
   dailyStatus?: DailyRecordUpdateInputDtoDailyStatus;
 }
 
+export interface DailyRecordExtractedDto {
+  notes: string;
+  dailyStatus: string;
+}
+
 /**
  * 飲み物の種類
  */
@@ -1088,6 +1093,107 @@ export interface AssessmentUpdateInputDto {
   legalSupport?: string;
   /** 個人因子 */
   personalTraits?: string;
+}
+
+/**
+ * 要介護状態区分
+ */
+export type AssessmentExtractDtoCareLevel = typeof AssessmentExtractDtoCareLevel[keyof typeof AssessmentExtractDtoCareLevel];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AssessmentExtractDtoCareLevel = {
+  NEEDS_CARE_1: 'NEEDS_CARE_1',
+  NEEDS_CARE_2: 'NEEDS_CARE_2',
+  NEEDS_CARE_3: 'NEEDS_CARE_3',
+  NEEDS_CARE_4: 'NEEDS_CARE_4',
+  NEEDS_CARE_5: 'NEEDS_CARE_5',
+} as const;
+
+/**
+ * 障害高齢者の日常生活自立度判定基準
+ */
+export type AssessmentExtractDtoPhysicalIndependence = typeof AssessmentExtractDtoPhysicalIndependence[keyof typeof AssessmentExtractDtoPhysicalIndependence];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AssessmentExtractDtoPhysicalIndependence = {
+  INDEPENDENT: 'INDEPENDENT',
+  J1: 'J1',
+  J2: 'J2',
+  A1: 'A1',
+  A2: 'A2',
+  B1: 'B1',
+  B2: 'B2',
+  C1: 'C1',
+  C2: 'C2',
+} as const;
+
+/**
+ * 認知症高齢者の日常生活自立度判定基準
+ */
+export type AssessmentExtractDtoCognitiveIndependence = typeof AssessmentExtractDtoCognitiveIndependence[keyof typeof AssessmentExtractDtoCognitiveIndependence];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AssessmentExtractDtoCognitiveIndependence = {
+  INDEPENDENT: 'INDEPENDENT',
+  I: 'I',
+  IIa: 'IIa',
+  IIb: 'IIb',
+  IIIa: 'IIIa',
+  IIIb: 'IIIb',
+  IV: 'IV',
+  M: 'M',
+} as const;
+
+export interface AssessmentExtractDto {
+  /** 家族構成 */
+  familyInfo: string;
+  /** 要介護状態区分 */
+  careLevel: AssessmentExtractDtoCareLevel;
+  /** 障害高齢者の日常生活自立度判定基準 */
+  physicalIndependence: AssessmentExtractDtoPhysicalIndependence;
+  /** 認知症高齢者の日常生活自立度判定基準 */
+  cognitiveIndependence: AssessmentExtractDtoCognitiveIndependence;
+  /** 既往症 */
+  medicalHistory: string;
+  /** 服用薬剤 */
+  medications: string;
+  /** 使用しているフォーマルサービス */
+  formalServices: string;
+  /** 使用しているインフォーマルサービス */
+  informalSupport: string;
+  /** 相談に至った経緯 */
+  consultationBackground: string;
+  /** 生活史 */
+  lifeHistory: string;
+  /** 主訴 */
+  complaints: string;
+  /** 健康状態 */
+  healthNotes: string;
+  /** 精神状態 */
+  mentalStatus: string;
+  /** 身体状態 */
+  physicalStatus: string;
+  /** ADL */
+  adlStatus: string;
+  /** コミュニケーション */
+  communication: string;
+  /** 日常生活 */
+  dailyLife: string;
+  /** IADL */
+  instrumentalADL: string;
+  /** 参加・参加制約 */
+  participation: string;
+  /** 環境 */
+  environment: string;
+  /** 生活状況 */
+  livingSituation: string;
+  /** 制度的環境 */
+  legalSupport: string;
+  /** 個人因子 */
+  personalTraits: string;
 }
 
 export interface SubjectListResponseDto {
@@ -5227,6 +5333,101 @@ export const useDeleteDailyRecordTranscription = <TError = unknown,
     }
     
 /**
+ * @summary 日常記録を抽出
+ */
+export const extractDailyRecord = (
+    residentUid: unknown,
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<DailyRecordExtractedDto>(
+      {url: `/residents/${residentUid}/daily-records/${uid}/extract`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+export const getExtractDailyRecordQueryKey = (residentUid: unknown,
+    uid: string,) => {
+    return [`/residents/${residentUid}/daily-records/${uid}/extract`] as const;
+    }
+
+    
+export const getExtractDailyRecordQueryOptions = <TData = Awaited<ReturnType<typeof extractDailyRecord>>, TError = unknown>(residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractDailyRecord>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExtractDailyRecordQueryKey(residentUid,uid);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof extractDailyRecord>>> = ({ signal }) => extractDailyRecord(residentUid,uid, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(residentUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof extractDailyRecord>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ExtractDailyRecordQueryResult = NonNullable<Awaited<ReturnType<typeof extractDailyRecord>>>
+export type ExtractDailyRecordQueryError = unknown
+
+
+export function useExtractDailyRecord<TData = Awaited<ReturnType<typeof extractDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractDailyRecord>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof extractDailyRecord>>,
+          TError,
+          Awaited<ReturnType<typeof extractDailyRecord>>
+        > , 'initialData'
+      >, }
+
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useExtractDailyRecord<TData = Awaited<ReturnType<typeof extractDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractDailyRecord>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof extractDailyRecord>>,
+          TError,
+          Awaited<ReturnType<typeof extractDailyRecord>>
+        > , 'initialData'
+      >, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useExtractDailyRecord<TData = Awaited<ReturnType<typeof extractDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractDailyRecord>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary 日常記録を抽出
+ */
+
+export function useExtractDailyRecord<TData = Awaited<ReturnType<typeof extractDailyRecord>>, TError = unknown>(
+ residentUid: unknown,
+    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof extractDailyRecord>>, TError, TData>>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getExtractDailyRecordQueryOptions(residentUid,uid,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary 利用者の飲料記録一覧を取得
  */
 export const getBeverageRecords = (
@@ -6234,7 +6435,7 @@ export const useDeleteAssessment = <TError = unknown,
 /**
  * @summary アセスメントの文字起こしを取得
  */
-export const getTranscription = (
+export const getAssessmentTranscription = (
     uid: string,
  signal?: AbortSignal
 ) => {
@@ -6247,67 +6448,67 @@ export const getTranscription = (
     }
   
 
-export const getGetTranscriptionQueryKey = (uid: string,) => {
+export const getGetAssessmentTranscriptionQueryKey = (uid: string,) => {
     return [`/assessments/${uid}/transcription`] as const;
     }
 
     
-export const getGetTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getTranscription>>, TError = unknown>(uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTranscription>>, TError, TData>>, }
+export const getGetAssessmentTranscriptionQueryOptions = <TData = Awaited<ReturnType<typeof getAssessmentTranscription>>, TError = unknown>(uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessmentTranscription>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTranscriptionQueryKey(uid);
+  const queryKey =  queryOptions?.queryKey ?? getGetAssessmentTranscriptionQueryKey(uid);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTranscription>>> = ({ signal }) => getTranscription(uid, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAssessmentTranscription>>> = ({ signal }) => getAssessmentTranscription(uid, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAssessmentTranscription>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getTranscription>>>
-export type GetTranscriptionQueryError = unknown
+export type GetAssessmentTranscriptionQueryResult = NonNullable<Awaited<ReturnType<typeof getAssessmentTranscription>>>
+export type GetAssessmentTranscriptionQueryError = unknown
 
 
-export function useGetTranscription<TData = Awaited<ReturnType<typeof getTranscription>>, TError = unknown>(
- uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTranscription>>, TError, TData>> & Pick<
+export function useGetAssessmentTranscription<TData = Awaited<ReturnType<typeof getAssessmentTranscription>>, TError = unknown>(
+ uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessmentTranscription>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTranscription>>,
+          Awaited<ReturnType<typeof getAssessmentTranscription>>,
           TError,
-          Awaited<ReturnType<typeof getTranscription>>
+          Awaited<ReturnType<typeof getAssessmentTranscription>>
         > , 'initialData'
       >, }
 
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTranscription<TData = Awaited<ReturnType<typeof getTranscription>>, TError = unknown>(
- uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTranscription>>, TError, TData>> & Pick<
+export function useGetAssessmentTranscription<TData = Awaited<ReturnType<typeof getAssessmentTranscription>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessmentTranscription>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTranscription>>,
+          Awaited<ReturnType<typeof getAssessmentTranscription>>,
           TError,
-          Awaited<ReturnType<typeof getTranscription>>
+          Awaited<ReturnType<typeof getAssessmentTranscription>>
         > , 'initialData'
       >, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTranscription<TData = Awaited<ReturnType<typeof getTranscription>>, TError = unknown>(
- uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTranscription>>, TError, TData>>, }
+export function useGetAssessmentTranscription<TData = Awaited<ReturnType<typeof getAssessmentTranscription>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessmentTranscription>>, TError, TData>>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary アセスメントの文字起こしを取得
  */
 
-export function useGetTranscription<TData = Awaited<ReturnType<typeof getTranscription>>, TError = unknown>(
- uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTranscription>>, TError, TData>>, }
+export function useGetAssessmentTranscription<TData = Awaited<ReturnType<typeof getAssessmentTranscription>>, TError = unknown>(
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAssessmentTranscription>>, TError, TData>>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTranscriptionQueryOptions(uid,options)
+  const queryOptions = getGetAssessmentTranscriptionQueryOptions(uid,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -6322,7 +6523,7 @@ export function useGetTranscription<TData = Awaited<ReturnType<typeof getTranscr
 /**
  * @summary アセスメントの文字起こしを追記
  */
-export const appendTranscription = (
+export const appendAssessmentTranscription = (
     uid: string,
     transcriptionInputDto: TranscriptionInputDto,
  ) => {
@@ -6338,11 +6539,11 @@ export const appendTranscription = (
   
 
 
-export const getAppendTranscriptionMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof appendTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext> => {
+export const getAppendAssessmentTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendAssessmentTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof appendAssessmentTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext> => {
     
-const mutationKey = ['appendTranscription'];
+const mutationKey = ['appendAssessmentTranscription'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -6352,10 +6553,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendTranscription>>, {uid: string;data: TranscriptionInputDto}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof appendAssessmentTranscription>>, {uid: string;data: TranscriptionInputDto}> = (props) => {
           const {uid,data} = props ?? {};
 
-          return  appendTranscription(uid,data,)
+          return  appendAssessmentTranscription(uid,data,)
         }
 
         
@@ -6363,38 +6564,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type AppendTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendTranscription>>>
-    export type AppendTranscriptionMutationBody = TranscriptionInputDto
-    export type AppendTranscriptionMutationError = unknown
+    export type AppendAssessmentTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof appendAssessmentTranscription>>>
+    export type AppendAssessmentTranscriptionMutationBody = TranscriptionInputDto
+    export type AppendAssessmentTranscriptionMutationError = unknown
 
     /**
  * @summary アセスメントの文字起こしを追記
  */
-export const useAppendTranscription = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
+export const useAppendAssessmentTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof appendAssessmentTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
 ): UseMutationResult<
-        Awaited<ReturnType<typeof appendTranscription>>,
+        Awaited<ReturnType<typeof appendAssessmentTranscription>>,
         TError,
         {uid: string;data: TranscriptionInputDto},
         TContext
       > => {
 
-      const mutationOptions = getAppendTranscriptionMutationOptions(options);
+      const mutationOptions = getAppendAssessmentTranscriptionMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
     
 /**
- * @summary QAセッションの音声ファイルの文字起こしを更新する
+ * @summary アセスメントの文字起こしを置換
  */
-export const updateTranscription = (
+export const updateAssessmentTranscription = (
     uid: string,
     transcriptionInputDto: TranscriptionInputDto,
  ) => {
       
       
-      return customInstance<void>(
-      {url: `/qa/sessions/${uid}/transcription`, method: 'PUT',
+      return customInstance<TranscriptionDto>(
+      {url: `/assessments/${uid}/transcription`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: transcriptionInputDto
     },
@@ -6403,11 +6604,11 @@ export const updateTranscription = (
   
 
 
-export const getUpdateTranscriptionMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext> => {
+export const getUpdateAssessmentTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAssessmentTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAssessmentTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext> => {
     
-const mutationKey = ['updateTranscription'];
+const mutationKey = ['updateAssessmentTranscription'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -6417,10 +6618,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTranscription>>, {uid: string;data: TranscriptionInputDto}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAssessmentTranscription>>, {uid: string;data: TranscriptionInputDto}> = (props) => {
           const {uid,data} = props ?? {};
 
-          return  updateTranscription(uid,data,)
+          return  updateAssessmentTranscription(uid,data,)
         }
 
         
@@ -6428,23 +6629,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateTranscription>>>
-    export type UpdateTranscriptionMutationBody = TranscriptionInputDto
-    export type UpdateTranscriptionMutationError = void
+    export type UpdateAssessmentTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateAssessmentTranscription>>>
+    export type UpdateAssessmentTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateAssessmentTranscriptionMutationError = unknown
 
     /**
- * @summary QAセッションの音声ファイルの文字起こしを更新する
+ * @summary アセスメントの文字起こしを置換
  */
-export const useUpdateTranscription = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
+export const useUpdateAssessmentTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAssessmentTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
 ): UseMutationResult<
-        Awaited<ReturnType<typeof updateTranscription>>,
+        Awaited<ReturnType<typeof updateAssessmentTranscription>>,
         TError,
         {uid: string;data: TranscriptionInputDto},
         TContext
       > => {
 
-      const mutationOptions = getUpdateTranscriptionMutationOptions(options);
+      const mutationOptions = getUpdateAssessmentTranscriptionMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
@@ -6452,7 +6653,7 @@ export const useUpdateTranscription = <TError = void,
 /**
  * @summary アセスメントの文字起こしを削除
  */
-export const deleteTranscription = (
+export const deleteAssessmentTranscription = (
     uid: string,
  ) => {
       
@@ -6465,11 +6666,11 @@ export const deleteTranscription = (
   
 
 
-export const getDeleteTranscriptionMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTranscription>>, TError,{uid: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTranscription>>, TError,{uid: string}, TContext> => {
+export const getDeleteAssessmentTranscriptionMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAssessmentTranscription>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAssessmentTranscription>>, TError,{uid: string}, TContext> => {
     
-const mutationKey = ['deleteTranscription'];
+const mutationKey = ['deleteAssessmentTranscription'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -6479,10 +6680,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTranscription>>, {uid: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAssessmentTranscription>>, {uid: string}> = (props) => {
           const {uid} = props ?? {};
 
-          return  deleteTranscription(uid,)
+          return  deleteAssessmentTranscription(uid,)
         }
 
         
@@ -6490,23 +6691,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTranscription>>>
+    export type DeleteAssessmentTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAssessmentTranscription>>>
     
-    export type DeleteTranscriptionMutationError = unknown
+    export type DeleteAssessmentTranscriptionMutationError = unknown
 
     /**
  * @summary アセスメントの文字起こしを削除
  */
-export const useDeleteTranscription = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTranscription>>, TError,{uid: string}, TContext>, }
+export const useDeleteAssessmentTranscription = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAssessmentTranscription>>, TError,{uid: string}, TContext>, }
 ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTranscription>>,
+        Awaited<ReturnType<typeof deleteAssessmentTranscription>>,
         TError,
         {uid: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteTranscriptionMutationOptions(options);
+      const mutationOptions = getDeleteAssessmentTranscriptionMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
@@ -6570,6 +6771,69 @@ export const useSummarizeAssessment = <TError = unknown,
       > => {
 
       const mutationOptions = getSummarizeAssessmentMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary アセスメントの内容を抽出
+ */
+export const extractAssessment = (
+    uid: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AssessmentExtractDto>(
+      {url: `/assessments/${uid}/extract`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getExtractAssessmentMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractAssessment>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof extractAssessment>>, TError,{uid: string}, TContext> => {
+    
+const mutationKey = ['extractAssessment'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractAssessment>>, {uid: string}> = (props) => {
+          const {uid} = props ?? {};
+
+          return  extractAssessment(uid,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractAssessmentMutationResult = NonNullable<Awaited<ReturnType<typeof extractAssessment>>>
+    
+    export type ExtractAssessmentMutationError = unknown
+
+    /**
+ * @summary アセスメントの内容を抽出
+ */
+export const useExtractAssessment = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractAssessment>>, TError,{uid: string}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof extractAssessment>>,
+        TError,
+        {uid: string},
+        TContext
+      > => {
+
+      const mutationOptions = getExtractAssessmentMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
@@ -8033,3 +8297,68 @@ export function useExtractQaPairsFromTranscription<TData = Awaited<ReturnType<ty
 
 
 
+/**
+ * @summary QAセッションの音声ファイルの文字起こしを更新する
+ */
+export const updateTranscription = (
+    uid: string,
+    transcriptionInputDto: TranscriptionInputDto,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/qa/sessions/${uid}/transcription`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: transcriptionInputDto
+    },
+      );
+    }
+  
+
+
+export const getUpdateTranscriptionMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext> => {
+    
+const mutationKey = ['updateTranscription'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTranscription>>, {uid: string;data: TranscriptionInputDto}> = (props) => {
+          const {uid,data} = props ?? {};
+
+          return  updateTranscription(uid,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTranscriptionMutationResult = NonNullable<Awaited<ReturnType<typeof updateTranscription>>>
+    export type UpdateTranscriptionMutationBody = TranscriptionInputDto
+    export type UpdateTranscriptionMutationError = void
+
+    /**
+ * @summary QAセッションの音声ファイルの文字起こしを更新する
+ */
+export const useUpdateTranscription = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTranscription>>, TError,{uid: string;data: TranscriptionInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof updateTranscription>>,
+        TError,
+        {uid: string;data: TranscriptionInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
