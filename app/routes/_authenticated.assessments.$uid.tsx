@@ -1,11 +1,12 @@
 import {
   getAssessment,
-  getTranscription,
+  getAssessmentTranscription,
   updateAssessment,
-  updateTranscription,
+  updateAssessmentTranscription,
   summarizeAssessment,
-  type AssessmentDto,
+  extractAssessment,
   type AssessmentUpdateInputDto,
+  type AssessmentExtractDto,
 } from "~/api/nagaraCareAPI";
 import type { Route } from "./+types/_authenticated.assessments.$uid";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -25,7 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const assessment = await getAssessment(params.uid);
-  const transcription = await getTranscription(params.uid);
+  const transcription = await getAssessmentTranscription(params.uid);
   return {
     assessment,
     transcription,
@@ -41,13 +42,18 @@ export async function clientAction({
 
   if (intent === "update_transcription") {
     const transcription = formData.get("transcription") as string;
-    await updateTranscription(params.uid, { transcription });
+    await updateAssessmentTranscription(params.uid, { transcription });
     return null;
   }
 
   if (intent === "summarize") {
     const summary = await summarizeAssessment(params.uid);
     return { summary };
+  }
+
+  if (intent === "extract") {
+    const extractedData = await extractAssessment(params.uid);
+    return { extractedData };
   }
 
   const data: AssessmentUpdateInputDto = {
@@ -88,18 +94,89 @@ export async function clientAction({
 
 export default function Assessment({ loaderData }: Route.ComponentProps) {
   const { assessment, transcription } = loaderData;
-  const actionData = useActionData<{ summary: string }>();
+  const actionData = useActionData<{
+    summary?: string;
+    extractedData?: AssessmentExtractDto;
+  }>();
   const [transcriptionText, setTranscriptionText] = useState(
     transcription.transcription
   );
   const [summaryText, setSummaryText] = useState("");
+  const [formRef, setFormRef] = useState<HTMLFormElement | null>(null);
+
+  // State for select fields with proper typing
+  const [careLevel, setCareLevel] = useState<typeof assessment.careLevel>(
+    assessment.careLevel
+  );
+  const [physicalIndependence, setPhysicalIndependence] = useState<
+    typeof assessment.physicalIndependence
+  >(assessment.physicalIndependence);
+  const [cognitiveIndependence, setCognitiveIndependence] = useState<
+    typeof assessment.cognitiveIndependence
+  >(assessment.cognitiveIndependence);
+
+  // Handler functions for select components
+  const handleCareLevelChange = (value: string) => {
+    setCareLevel(value as typeof assessment.careLevel);
+  };
+
+  const handlePhysicalIndependenceChange = (value: string) => {
+    setPhysicalIndependence(value as typeof assessment.physicalIndependence);
+  };
+
+  const handleCognitiveIndependenceChange = (value: string) => {
+    setCognitiveIndependence(value as typeof assessment.cognitiveIndependence);
+  };
+
   const navigate = useNavigate();
 
   useEffect(() => {
     if (actionData?.summary) {
       setSummaryText(actionData.summary);
     }
-  }, [actionData]);
+
+    if (actionData?.extractedData && formRef) {
+      // Update all form fields with extracted data
+      const extractedData = actionData.extractedData;
+
+      // 選択フィールド以外のすべてのフィールドを取得
+      const selectFields = [
+        "careLevel",
+        "physicalIndependence",
+        "cognitiveIndependence",
+      ];
+
+      // AssessmentExtractDtoのキーを取得し、選択フィールド以外のテキストフィールドを特定
+      Object.keys(extractedData).forEach((field) => {
+        // 選択フィールドとcreatedAtをスキップ
+        if (selectFields.includes(field)) {
+          return;
+        }
+
+        const element = formRef.elements.namedItem(
+          field
+        ) as HTMLTextAreaElement;
+        if (element && extractedData[field as keyof AssessmentExtractDto]) {
+          element.value = extractedData[
+            field as keyof AssessmentExtractDto
+          ] as string;
+        }
+      });
+
+      // Update select fields using the handler functions
+      if (extractedData.careLevel) {
+        handleCareLevelChange(extractedData.careLevel);
+      }
+
+      if (extractedData.physicalIndependence) {
+        handlePhysicalIndependenceChange(extractedData.physicalIndependence);
+      }
+
+      if (extractedData.cognitiveIndependence) {
+        handleCognitiveIndependenceChange(extractedData.cognitiveIndependence);
+      }
+    }
+  }, [actionData, formRef]);
 
   return (
     <div className="container mx-auto p-4">
@@ -111,7 +188,7 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
               <CardTitle>アセスメント情報</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Form method="post">
+              <Form method="post" ref={setFormRef}>
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="familyInfo">家族構成</Label>
@@ -127,7 +204,8 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                     <Label htmlFor="careLevel">要介護状態区分</Label>
                     <Select
                       name="careLevel"
-                      defaultValue={assessment.careLevel}
+                      value={careLevel}
+                      onValueChange={handleCareLevelChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="要介護状態区分を選択" />
@@ -148,7 +226,8 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                     </Label>
                     <Select
                       name="physicalIndependence"
-                      defaultValue={assessment.physicalIndependence}
+                      value={physicalIndependence}
+                      onValueChange={handlePhysicalIndependenceChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="日常生活自立度を選択" />
@@ -173,7 +252,8 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                     </Label>
                     <Select
                       name="cognitiveIndependence"
-                      defaultValue={assessment.cognitiveIndependence}
+                      value={cognitiveIndependence}
+                      onValueChange={handleCognitiveIndependenceChange}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="日常生活自立度を選択" />
@@ -402,7 +482,10 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>文字起こし・要約</CardTitle>
-                <Button>解析</Button>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="extract" />
+                  <Button type="submit">解析</Button>
+                </Form>
               </div>
             </CardHeader>
             <CardContent>
