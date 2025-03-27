@@ -5,6 +5,7 @@ import {
   updateAssessmentTranscription,
   summarizeAssessment,
   extractAssessment,
+  transcribeAudio,
   type AssessmentUpdateInputDto,
   type AssessmentExtractDto,
 } from "~/api/nagaraCareAPI";
@@ -20,9 +21,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
-import { useEffect, useState } from "react";
-import { Form, useActionData, useNavigate } from "react-router";
+import { useEffect, useState, useRef } from "react";
+import { Form, useActionData, useNavigate, useParams } from "react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import hark from "hark";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const assessment = await getAssessment(params.uid);
@@ -94,6 +96,7 @@ export async function clientAction({
 
 export default function Assessment({ loaderData }: Route.ComponentProps) {
   const { assessment, transcription } = loaderData;
+  const params = useParams();
   const actionData = useActionData<{
     summary?: string;
     extractedData?: AssessmentExtractDto;
@@ -103,8 +106,16 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
   );
   const [summaryText, setSummaryText] = useState("");
   const [formRef, setFormRef] = useState<HTMLFormElement | null>(null);
+  const [isMicActive, setIsMicActive] = useState(false);
+  const [recordedBlobs, setRecordedBlobs] = useState<
+    { blob: Blob; url: string }[]
+  >([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const harkRef = useRef<hark.Harker | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
 
-  // State for select fields with proper typing
   const [careLevel, setCareLevel] = useState<typeof assessment.careLevel>(
     assessment.careLevel
   );
@@ -115,7 +126,6 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
     typeof assessment.cognitiveIndependence
   >(assessment.cognitiveIndependence);
 
-  // Handler functions for select components
   const handleCareLevelChange = (value: string) => {
     setCareLevel(value as typeof assessment.careLevel);
   };
@@ -130,25 +140,141 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
 
   const navigate = useNavigate();
 
+  const startListening = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const options = {
+        // threshold: -65,
+        // interval: 50,
+      };
+      const speechEvents = hark(stream, options);
+      harkRef.current = speechEvents;
+
+      speechEvents.on("speaking", () => {
+        console.log("speaking");
+        if (
+          !mediaRecorderRef.current ||
+          mediaRecorderRef.current.state === "inactive"
+        ) {
+          mediaRecorderRef.current = new MediaRecorder(streamRef.current!, {
+            mimeType: "audio/webm;codecs=opus",
+            // mimeType: 'audio/wav'
+          });
+
+          mediaRecorderRef.current.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
+
+          mediaRecorderRef.current.onstop = () => {
+            const mimeType = mediaRecorderRef.current?.mimeType || "audio/webm";
+            const audioBlob = new Blob(audioChunksRef.current, {
+              type: mimeType,
+            });
+            const url = URL.createObjectURL(audioBlob);
+            console.log("録音データ:", audioBlob, "URL:", url);
+            setRecordedBlobs((prevBlobs) => [
+              ...prevBlobs,
+              { blob: audioBlob, url: url },
+            ]);
+            audioChunksRef.current = [];
+          };
+
+          mediaRecorderRef.current.start();
+          console.log("Recorder started");
+        }
+      });
+
+      speechEvents.on("stopped_speaking", () => {
+        console.log("stopped_speaking");
+        if (
+          mediaRecorderRef.current &&
+          mediaRecorderRef.current.state === "recording"
+        ) {
+          mediaRecorderRef.current.stop();
+          console.log("Recorder stopped");
+        }
+      });
+
+      setIsMicActive(true);
+      console.log("マイク監視開始");
+    } catch (err) {
+      console.error("マイクへのアクセスまたはharkの初期化に失敗しました:", err);
+      alert(
+        "マイクへのアクセスに失敗しました。ブラウザの設定を確認してください。"
+      );
+    }
+  };
+
+  const stopListening = () => {
+    if (harkRef.current) {
+      harkRef.current.stop();
+      harkRef.current = null;
+      console.log("hark停止");
+    }
+
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
+      mediaRecorderRef.current.stop();
+      console.log("Recorder stopped during cleanup");
+    }
+    mediaRecorderRef.current = null;
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      console.log("マイクストリーム停止");
+    }
+
+    setIsMicActive(false);
+    audioChunksRef.current = [];
+  };
+
+  const handleTranscribe = async (blob: Blob) => {
+    try {
+      setIsTranscribing(true);
+      const transcription = await transcribeAudio({ audio: blob });
+      if (transcription) {
+        setTranscriptionText((prev) =>
+          prev ? `${prev}\n\n${transcription}` : transcription
+        );
+      }
+    } catch (error) {
+      console.error("文字起こしに失敗しました:", error);
+      alert("文字起こしに失敗しました。もう一度お試しください。");
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopListening();
+      recordedBlobs.forEach(({ url }) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (actionData?.summary) {
       setSummaryText(actionData.summary);
     }
 
     if (actionData?.extractedData && formRef) {
-      // Update all form fields with extracted data
       const extractedData = actionData.extractedData;
 
-      // 選択フィールド以外のすべてのフィールドを取得
       const selectFields = [
         "careLevel",
         "physicalIndependence",
         "cognitiveIndependence",
       ];
 
-      // AssessmentExtractDtoのキーを取得し、選択フィールド以外のテキストフィールドを特定
       Object.keys(extractedData).forEach((field) => {
-        // 選択フィールドとcreatedAtをスキップ
         if (selectFields.includes(field)) {
           return;
         }
@@ -163,7 +289,6 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
         }
       });
 
-      // Update select fields using the handler functions
       if (extractedData.careLevel) {
         handleCareLevelChange(extractedData.careLevel);
       }
@@ -181,7 +306,6 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
   return (
     <div className="container mx-auto p-4">
       <div className="grid grid-cols-2 gap-4">
-        {/* 左ペイン：アセスメントフォーム */}
         <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-2rem)]">
           <Card>
             <CardHeader>
@@ -476,7 +600,6 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
           </Card>
         </div>
 
-        {/* 右ペイン：文字起こしと要約のタブ */}
         <div>
           <Card className="h-full">
             <CardHeader>
@@ -495,6 +618,48 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                   <TabsTrigger value="summary">要約</TabsTrigger>
                 </TabsList>
                 <TabsContent value="transcription" className="space-y-4">
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={startListening}
+                      disabled={isMicActive}
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      監視開始
+                    </Button>
+                    <Button
+                      onClick={stopListening}
+                      disabled={!isMicActive}
+                      variant="secondary"
+                      className="flex-1"
+                    >
+                      監視停止
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 max-h-40 overflow-y-auto border p-2 rounded">
+                    <Label>録音された発話:</Label>
+                    {recordedBlobs.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        まだ発話が録音されていません。
+                      </p>
+                    ) : (
+                      recordedBlobs.map((item, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <span className="text-sm">発話 {index + 1}</span>
+                          <audio controls src={item.url} className="w-full" />
+                          <Button
+                            onClick={() => handleTranscribe(item.blob)}
+                            disabled={isTranscribing}
+                            size="sm"
+                          >
+                            {isTranscribing ? "文字起こし中..." : "文字起こし"}
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
                   <Form method="post">
                     <input
                       type="hidden"
@@ -516,7 +681,7 @@ export default function Assessment({ loaderData }: Route.ComponentProps) {
                         name="transcription"
                         value={transcriptionText}
                         onChange={(e) => setTranscriptionText(e.target.value)}
-                        className="h-[calc(100vh-20rem)]"
+                        className="h-[calc(100vh-28rem)]"
                         placeholder="音声の文字起こしがここに表示されます..."
                       />
                     </div>

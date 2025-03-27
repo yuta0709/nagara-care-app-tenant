@@ -1380,6 +1380,10 @@ export interface ExtractQaPairsOutputDto {
   data: ExtractedQaPair[];
 }
 
+export interface TranscriptAudioInputDto {
+  audio: Blob;
+}
+
 export type GetDailyFoodRecordsParams = {
 /**
  * 開始日（YYYY-MM-DD形式）。指定しない場合は過去30日間
@@ -8358,6 +8362,73 @@ export const useUpdateTranscription = <TError = void,
       > => {
 
       const mutationOptions = getUpdateTranscriptionMutationOptions(options);
+
+      return useMutation(mutationOptions);
+    }
+    
+/**
+ * @summary 音声ファイルを文字起こしする
+ */
+export const transcribeAudio = (
+    transcriptAudioInputDto: TranscriptAudioInputDto,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append('audio', transcriptAudioInputDto.audio)
+
+      return customInstance<string>(
+      {url: `/transcription`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      );
+    }
+  
+
+
+export const getTranscribeAudioMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transcribeAudio>>, TError,{data: TranscriptAudioInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof transcribeAudio>>, TError,{data: TranscriptAudioInputDto}, TContext> => {
+    
+const mutationKey = ['transcribeAudio'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof transcribeAudio>>, {data: TranscriptAudioInputDto}> = (props) => {
+          const {data} = props ?? {};
+
+          return  transcribeAudio(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TranscribeAudioMutationResult = NonNullable<Awaited<ReturnType<typeof transcribeAudio>>>
+    export type TranscribeAudioMutationBody = TranscriptAudioInputDto
+    export type TranscribeAudioMutationError = unknown
+
+    /**
+ * @summary 音声ファイルを文字起こしする
+ */
+export const useTranscribeAudio = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transcribeAudio>>, TError,{data: TranscriptAudioInputDto}, TContext>, }
+): UseMutationResult<
+        Awaited<ReturnType<typeof transcribeAudio>>,
+        TError,
+        {data: TranscriptAudioInputDto},
+        TContext
+      > => {
+
+      const mutationOptions = getTranscribeAudioMutationOptions(options);
 
       return useMutation(mutationOptions);
     }
