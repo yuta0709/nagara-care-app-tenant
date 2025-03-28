@@ -32,7 +32,7 @@ import { Separator } from "~/components/ui/separator";
 
 export async function clientLoader() {
   const me = await getMe();
-  const subjects = await getSubjects(me.tenantUid);
+  const subjects = await getSubjects();
   return {
     subjects,
     tenantUid: me.tenantUid,
@@ -54,7 +54,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
       gender: formData.get("gender") as "MALE" | "FEMALE",
     };
 
-    const createdSubject = await createSubject(tenantUid, subject);
+    const createdSubject = await createSubject(subject);
     const assessment = await createAssessment({
       subjectUid: createdSubject.uid,
     });

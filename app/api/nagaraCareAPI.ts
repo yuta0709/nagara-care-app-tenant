@@ -863,8 +863,6 @@ export interface SubjectDto {
   dateOfBirth: string;
   /** 性別 */
   gender: SubjectDtoGender;
-  /** テナントUID */
-  tenantUid: string;
   /** 作成日時 */
   createdAt: string;
 }
@@ -6846,39 +6844,39 @@ export const useExtractAssessment = <TError = unknown,
  * @summary テナント内のアセスメント対象者一覧を取得
  */
 export const getSubjects = (
-    tenantUid?: string,
+    
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<SubjectListResponseDto>(
-      {url: `/tenants/${tenantUid}/subjects`, method: 'GET', signal
+      {url: `/subjects`, method: 'GET', signal
     },
       );
     }
   
 
-export const getGetSubjectsQueryKey = (tenantUid?: string,) => {
-    return [`/tenants/${tenantUid}/subjects`] as const;
+export const getGetSubjectsQueryKey = () => {
+    return [`/subjects`] as const;
     }
 
     
-export const getGetSubjectsQueryOptions = <TData = Awaited<ReturnType<typeof getSubjects>>, TError = unknown>(tenantUid?: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>>, }
+export const getGetSubjectsQueryOptions = <TData = Awaited<ReturnType<typeof getSubjects>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSubjectsQueryKey(tenantUid);
+  const queryKey =  queryOptions?.queryKey ?? getGetSubjectsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubjects>>> = ({ signal }) => getSubjects(tenantUid, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubjects>>> = ({ signal }) => getSubjects(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantUid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetSubjectsQueryResult = NonNullable<Awaited<ReturnType<typeof getSubjects>>>
@@ -6886,7 +6884,7 @@ export type GetSubjectsQueryError = unknown
 
 
 export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, TError = unknown>(
- tenantUid: undefined |  string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>> & Pick<
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSubjects>>,
           TError,
@@ -6896,7 +6894,7 @@ export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, 
 
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, TError = unknown>(
- tenantUid?: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>> & Pick<
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSubjects>>,
           TError,
@@ -6906,7 +6904,7 @@ export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, 
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, TError = unknown>(
- tenantUid?: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -6914,11 +6912,11 @@ export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, 
  */
 
 export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, TError = unknown>(
- tenantUid?: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubjects>>, TError, TData>>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSubjectsQueryOptions(tenantUid,options)
+  const queryOptions = getGetSubjectsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -6934,14 +6932,13 @@ export function useGetSubjects<TData = Awaited<ReturnType<typeof getSubjects>>, 
  * @summary テナントにアセスメント対象者を作成
  */
 export const createSubject = (
-    tenantUid: string,
     subjectCreateInputDto: SubjectCreateInputDto,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<SubjectDto>(
-      {url: `/tenants/${tenantUid}/subjects`, method: 'POST',
+      {url: `/subjects`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: subjectCreateInputDto, signal
     },
@@ -6951,8 +6948,8 @@ export const createSubject = (
 
 
 export const getCreateSubjectMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubject>>, TError,{tenantUid: string;data: SubjectCreateInputDto}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createSubject>>, TError,{tenantUid: string;data: SubjectCreateInputDto}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubject>>, TError,{data: SubjectCreateInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createSubject>>, TError,{data: SubjectCreateInputDto}, TContext> => {
     
 const mutationKey = ['createSubject'];
 const {mutation: mutationOptions} = options ?
@@ -6964,10 +6961,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSubject>>, {tenantUid: string;data: SubjectCreateInputDto}> = (props) => {
-          const {tenantUid,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSubject>>, {data: SubjectCreateInputDto}> = (props) => {
+          const {data} = props ?? {};
 
-          return  createSubject(tenantUid,data,)
+          return  createSubject(data,)
         }
 
         
@@ -6983,11 +6980,11 @@ const {mutation: mutationOptions} = options ?
  * @summary テナントにアセスメント対象者を作成
  */
 export const useCreateSubject = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubject>>, TError,{tenantUid: string;data: SubjectCreateInputDto}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSubject>>, TError,{data: SubjectCreateInputDto}, TContext>, }
 ): UseMutationResult<
         Awaited<ReturnType<typeof createSubject>>,
         TError,
-        {tenantUid: string;data: SubjectCreateInputDto},
+        {data: SubjectCreateInputDto},
         TContext
       > => {
 
@@ -7000,42 +6997,39 @@ export const useCreateSubject = <TError = unknown,
  * @summary アセスメント対象者の詳細を取得
  */
 export const getSubject = (
-    tenantUid: string,
     uid: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<SubjectDto>(
-      {url: `/tenants/${tenantUid}/subjects/${uid}`, method: 'GET', signal
+      {url: `/subjects/${uid}`, method: 'GET', signal
     },
       );
     }
   
 
-export const getGetSubjectQueryKey = (tenantUid: string,
-    uid: string,) => {
-    return [`/tenants/${tenantUid}/subjects/${uid}`] as const;
+export const getGetSubjectQueryKey = (uid: string,) => {
+    return [`/subjects/${uid}`] as const;
     }
 
     
-export const getGetSubjectQueryOptions = <TData = Awaited<ReturnType<typeof getSubject>>, TError = unknown>(tenantUid: string,
-    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>>, }
+export const getGetSubjectQueryOptions = <TData = Awaited<ReturnType<typeof getSubject>>, TError = unknown>(uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSubjectQueryKey(tenantUid,uid);
+  const queryKey =  queryOptions?.queryKey ?? getGetSubjectQueryKey(uid);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubject>>> = ({ signal }) => getSubject(tenantUid,uid, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSubject>>> = ({ signal }) => getSubject(uid, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(tenantUid && uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(uid), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetSubjectQueryResult = NonNullable<Awaited<ReturnType<typeof getSubject>>>
@@ -7043,8 +7037,7 @@ export type GetSubjectQueryError = unknown
 
 
 export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TError = unknown>(
- tenantUid: string,
-    uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>> & Pick<
+ uid: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSubject>>,
           TError,
@@ -7054,8 +7047,7 @@ export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TE
 
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TError = unknown>(
- tenantUid: string,
-    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>> & Pick<
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSubject>>,
           TError,
@@ -7065,8 +7057,7 @@ export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TE
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TError = unknown>(
- tenantUid: string,
-    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>>, }
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -7074,12 +7065,11 @@ export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TE
  */
 
 export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TError = unknown>(
- tenantUid: string,
-    uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>>, }
+ uid: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSubject>>, TError, TData>>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSubjectQueryOptions(tenantUid,uid,options)
+  const queryOptions = getGetSubjectQueryOptions(uid,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -7095,14 +7085,13 @@ export function useGetSubject<TData = Awaited<ReturnType<typeof getSubject>>, TE
  * @summary アセスメント対象者を更新
  */
 export const updateSubject = (
-    tenantUid: string,
     uid: string,
     subjectUpdateInputDto: SubjectUpdateInputDto,
  ) => {
       
       
       return customInstance<SubjectDto>(
-      {url: `/tenants/${tenantUid}/subjects/${uid}`, method: 'PATCH',
+      {url: `/subjects/${uid}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: subjectUpdateInputDto
     },
@@ -7112,8 +7101,8 @@ export const updateSubject = (
 
 
 export const getUpdateSubjectMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSubject>>, TError,{tenantUid: string;uid: string;data: SubjectUpdateInputDto}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateSubject>>, TError,{tenantUid: string;uid: string;data: SubjectUpdateInputDto}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSubject>>, TError,{uid: string;data: SubjectUpdateInputDto}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateSubject>>, TError,{uid: string;data: SubjectUpdateInputDto}, TContext> => {
     
 const mutationKey = ['updateSubject'];
 const {mutation: mutationOptions} = options ?
@@ -7125,10 +7114,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSubject>>, {tenantUid: string;uid: string;data: SubjectUpdateInputDto}> = (props) => {
-          const {tenantUid,uid,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSubject>>, {uid: string;data: SubjectUpdateInputDto}> = (props) => {
+          const {uid,data} = props ?? {};
 
-          return  updateSubject(tenantUid,uid,data,)
+          return  updateSubject(uid,data,)
         }
 
         
@@ -7144,11 +7133,11 @@ const {mutation: mutationOptions} = options ?
  * @summary アセスメント対象者を更新
  */
 export const useUpdateSubject = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSubject>>, TError,{tenantUid: string;uid: string;data: SubjectUpdateInputDto}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSubject>>, TError,{uid: string;data: SubjectUpdateInputDto}, TContext>, }
 ): UseMutationResult<
         Awaited<ReturnType<typeof updateSubject>>,
         TError,
-        {tenantUid: string;uid: string;data: SubjectUpdateInputDto},
+        {uid: string;data: SubjectUpdateInputDto},
         TContext
       > => {
 
@@ -7161,13 +7150,12 @@ export const useUpdateSubject = <TError = unknown,
  * @summary アセスメント対象者を削除
  */
 export const deleteSubject = (
-    tenantUid: string,
     uid: string,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/tenants/${tenantUid}/subjects/${uid}`, method: 'DELETE'
+      {url: `/subjects/${uid}`, method: 'DELETE'
     },
       );
     }
@@ -7175,8 +7163,8 @@ export const deleteSubject = (
 
 
 export const getDeleteSubjectMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSubject>>, TError,{tenantUid: string;uid: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteSubject>>, TError,{tenantUid: string;uid: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSubject>>, TError,{uid: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSubject>>, TError,{uid: string}, TContext> => {
     
 const mutationKey = ['deleteSubject'];
 const {mutation: mutationOptions} = options ?
@@ -7188,10 +7176,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSubject>>, {tenantUid: string;uid: string}> = (props) => {
-          const {tenantUid,uid} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSubject>>, {uid: string}> = (props) => {
+          const {uid} = props ?? {};
 
-          return  deleteSubject(tenantUid,uid,)
+          return  deleteSubject(uid,)
         }
 
         
@@ -7207,11 +7195,11 @@ const {mutation: mutationOptions} = options ?
  * @summary アセスメント対象者を削除
  */
 export const useDeleteSubject = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSubject>>, TError,{tenantUid: string;uid: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSubject>>, TError,{uid: string}, TContext>, }
 ): UseMutationResult<
         Awaited<ReturnType<typeof deleteSubject>>,
         TError,
-        {tenantUid: string;uid: string},
+        {uid: string},
         TContext
       > => {
 
